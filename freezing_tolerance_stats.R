@@ -30,9 +30,15 @@ LT50_data$LT50mod <- ifelse(LT50_data$LT50< -11, -11, LT50_data$LT50)
 hist(LT50_data$LT50mod)
 
 #look at distribution of LT50mods without considering treatment type
+<<<<<<< HEAD
 descdist(LT50_data$LT50,discrete=FALSE)
 
 mod1<-glm(LT50~Species*julian_date*year,data=LT50_data,na.action="na.fail")
+=======
+descdist(LT50_data$LT50mod,discrete=FALSE)
+
+mod1<-glm(LT50mod~Species*julian_date*year,data=LT50_data,na.action="na.fail")
+>>>>>>> 0531baf62ca0e1330071dee31d1b043bb32d9a93
 summary(mod1)
 dredge(mod1)
 
@@ -42,7 +48,7 @@ summary(mod2)
 mod3<-glm(LT50mod~Species*julian_date+Species*year,data=LT50_data)
 summary(mod3)
 
-mod4<-glm(LT50~Species+julian_date+year,data=LT50_data)
+mod4<-glm(LT50mod~Species+julian_date,data=LT50_data)
 summary(mod4)
 
 summary(glht(mod4, mcp(Species="Tukey")))
@@ -50,10 +56,13 @@ summary(glht(mod4, mcp(Species="Tukey")))
 mod5<- glm(LT50~Species*julian_date+year, data=LT50_data)
 summary(mod5)
 
+<<<<<<< HEAD
 
 
 
 
+=======
+>>>>>>> 0531baf62ca0e1330071dee31d1b043bb32d9a93
 #convert LT50mod to positive integers
 LT50_data$LT50mod2 <- LT50_data$LT50mod + 11.1
 LT50_data$LT50mod2 <- log(LT50_data$LT50mod2)
@@ -64,7 +73,11 @@ summary(mod1b)
 dredge(mod1b)  
 
 descdist(LT50_data$LT50mod2,discrete=FALSE)
+<<<<<<< HEAD
 hist(LT50_data$LT50mod2, breaks=20)
+=======
+hist(LT50_data$LT50mod2)
+>>>>>>> 0531baf62ca0e1330071dee31d1b043bb32d9a93
 
 
 ###transform data####

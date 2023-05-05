@@ -37,5 +37,3 @@ dredge(mod1)
 mod5<- glm(LT50~Species*julian_date+year, data=LT50_data)
 summary(mod5)
 
-#test
-

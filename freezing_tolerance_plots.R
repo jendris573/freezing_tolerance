@@ -10,6 +10,8 @@ library(multcompView)
 library(lubridate)
 library(readxl)
 library(gridExtra)
+library(MuMIn)
+
 
 outputs<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
 
@@ -99,21 +101,21 @@ outputs_julian <- filter(outputs, State == "TN")
 
 outputs_julian <- outputs%>%
   group_by(Species, julian_date) %>%
-  dplyr::summarise(LT15.m=mean(LT15), LT50.m=mean(LT50), LT95.m=mean(LT95),
-                   LT50.m_sd=sd(LT50),
-                   LT50.m_se=sd(LT50)/sqrt(6))
+  dplyr::summarise(LT15.m=mean(LT15), LT50mod=mean(LT50), LT95.m=mean(LT95),
+                   LT50mod_sd=sd(LT50),
+                   LT50mod_se=sd(LT50)/sqrt(6))
 
-ggplot(outputs_julian, aes(x= julian_date,y=LT50.m, color= Species)) +
+ggplot(outputs_julian, aes(x= julian_date,y=LT50mod, color= Species)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   xlab ("Julian Date")+
   ylab ("Temperature (°C)")+
   xlim(40,130) +
   theme_bw()
 
-jd1<-ggplot(outputs_julian, aes(x = julian_date, y=LT50.m)) +
+jd1<-ggplot(outputs_julian, aes(x = julian_date, y=LT50mod)) +
   geom_point(data=subset(outputs_julian, Species=="Acer saccharum"))+
-  geom_errorbar(data=subset(outputs_julian, Species=="Acer saccharum"), aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(data=subset(outputs_julian, Species=="Acer saccharum"), aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="loess")+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
@@ -122,9 +124,9 @@ jd1<-ggplot(outputs_julian, aes(x = julian_date, y=LT50.m)) +
   theme(legend.position="none")+
   ggtitle("Acer saccharum")
 
-jd2<-ggplot(outputs_julian, aes(x = julian_date, y=LT50.m)) +
+jd2<-ggplot(outputs_julian, aes(x = julian_date, y=LT50mod)) +
   geom_point(data=subset(outputs_julian, Species=="Fagus grandifolia"))+
-  geom_errorbar(data=subset(outputs_julian, Species=="Fagus grandifolia"), aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(data=subset(outputs_julian, Species=="Fagus grandifolia"), aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="loess")+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
@@ -133,9 +135,9 @@ jd2<-ggplot(outputs_julian, aes(x = julian_date, y=LT50.m)) +
   theme(legend.position="none")+
   ggtitle("Fagus grandifolia")
 
-jd3<- ggplot(outputs_julian, aes(x = julian_date, y=LT50.m)) +
+jd3<- ggplot(outputs_julian, aes(x = julian_date, y=LT50mod)) +
   geom_point(data=subset(outputs_julian, Species=="Liriodendron tulipifera"))+
-  geom_errorbar(data=subset(outputs_julian, Species=="Liriodendron tulipifera"), aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(data=subset(outputs_julian, Species=="Liriodendron tulipifera"), aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="loess")+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
@@ -160,14 +162,14 @@ outputs_year$julian_date <- yday(outputs_year$Date)
 
 outputs_year <- outputs_year%>%
   group_by(Species, year, julian_date) %>%
-  dplyr::summarise(LT50.m=mean(LT50),
-                   LT50.m_sd=sd(LT50),
-                   LT50.m_se=sd(LT50)/sqrt(6))
+  dplyr::summarise(LT50mod=mean(LT50),
+                   LT50mod_sd=sd(LT50),
+                   LT50mod_se=sd(LT50)/sqrt(6))
 
 ###code for six panel version
-ASyear1<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2022), aes(x = julian_date, y=LT50.m)) +
+ASyear1<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2022), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -178,9 +180,9 @@ ASyear1<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2022)
   ggtitle("Acer saccharum - 2022")
 ASyear1
 
-ASyear2<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2023), aes(x = julian_date, y=LT50.m)) +
+ASyear2<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -191,9 +193,9 @@ ASyear2<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2023)
   ggtitle("Acer saccharum - 2023")
 ASyear2
 
-LTyear1<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2022), aes(x = julian_date, y=LT50.m)) +
+LTyear1<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2022), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -204,9 +206,9 @@ LTyear1<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& ye
   ggtitle("Liriodendron tulipifera - 2022")
 LTyear1
 
-LTyear2<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2023), aes(x = julian_date, y=LT50.m)) +
+LTyear2<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -217,9 +219,9 @@ LTyear2<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& ye
   ggtitle("Liriodendron tulipifera - 2023")
 LTyear2
 
-FGyear1<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2022), aes(x = julian_date, y=LT50.m)) +
+FGyear1<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2022), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -230,9 +232,9 @@ FGyear1<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==20
   ggtitle("Fagus grandifolia - 2022")
 FGyear1
 
-FGyear2<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2023), aes(x = julian_date, y=LT50.m)) +
+FGyear2<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -256,15 +258,18 @@ two_years <- mutate(two_years, year=year(two_years$Date))
 
 two_years$julian_date <- yday(two_years$Date)
 
+#force any LT50 values below -11 to be treated as -11
+two_years$LT50mod <- ifelse(two_years$LT50.m< -11, -11, two_years$LT50.m)
+
 two_years <- two_years%>%
   group_by(Species, julian_date, year) %>%
-  dplyr::summarise(LT50.m=mean(LT50),
-                   LT50.m_sd=sd(LT50),
-                   LT50.m_se=sd(LT50)/sqrt(6))
+  dplyr::summarise(LT50mod=mean(LT50mod),
+                   LT50mod_sd=sd(LT50mod),
+                   LT50mod_se=sd(LT50mod)/sqrt(6))
 
-ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julian_date, y=LT50.m, color=factor(year))) +
+ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -275,9 +280,9 @@ ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julia
   ggtitle("Acer saccharum")
 ASyears
 
-FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = julian_date, y=LT50.m, color=factor(year))) +
+FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -288,9 +293,9 @@ FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = ju
   ggtitle("Fagus grandifolia")
 FGyears
 
-LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(x = julian_date, y=LT50.m, color=factor(year))) +
+LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50.m+LT50.m_se,ymin=LT50.m-LT50.m_se))+
+  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+

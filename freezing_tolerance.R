@@ -164,6 +164,3 @@ LT$last_freeze <- ifelse(LT$State=="TN"&LT$Date=="2022-04-19", "after",LT$last_f
 #write LT values to the file
 write_xlsx(LT, "~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
 
-#testfor github2
-
-

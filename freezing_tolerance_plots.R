@@ -18,54 +18,6 @@ library(MuMIn)
 
 outputs<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
 
-#######################################################
-### garbage plot just to see where everything plots ###
-#######################################################
-
-ggplot(outputs, aes(x = State, y = LT50, shape = Species, color = Species)) +
-  geom_point(size = 2) +
-  xlab("Location") +
-  ylab("Temperature (°C)") +
-  theme_bw()
-
-#############################################################
-### garbage plot with mean LT50 values grouped by species ###
-#############################################################
-
-thresholds <- outputs%>%
-  group_by(Species)%>%
-  dplyr::summarise(across(LT15:LT95,list(mean=~mean(.),sd=~sd(.),se=~sd(./sqrt(6)))))
-
-ggplot(data=thresholds,aes(x=Species))+
-  geom_point(aes(y=LT50_mean))+
-  geom_errorbar(aes(ymin=LT50_mean-LT50_se,ymax=LT50_mean+LT50_se))+
-  ylab(bquote("Mean LT50 Temperature (°C)"))+
-  theme_bw()
-
-#################################
-###Tolerance at TN across time###
-#################################
-
-TN_outputs <- filter(outputs, State == "TN", Date >= "2022-01-01")
-
-TN_outputs$Species <- as.factor(TN_outputs$Species)
-is.factor(TN_outputs$Species)
-
-TN_mean <- TN_outputs%>%
-  group_by(Species,Date)%>%
-  dplyr::summarise(LT50mean= mean(LT50),
-                   LT50sd=sd(LT50),
-                   LT50se=sd(LT50)/sqrt(6))
-
-TN_plot <- ggplot(TN_outputs, aes(x=Date, y=LT50, color=Species))+
-  geom_point(position=position_dodge(0.5))+
-  xlab ("Date") +
-  ylab ("Temperature (°C)")+
-  theme_bw()+
-  theme(axis.text.x=element_text(angle=45,hjust=1))
-
-TN_plot
-
 ###########################################
 ##Before and After Mean last freeze plots##
 ###########################################
@@ -302,17 +254,17 @@ two_years <- mutate(two_years, year=year(two_years$Date))
 two_years$julian_date <- yday(two_years$Date)
 
 #force any LT50 values below -11 to be treated as -11
-two_years$LT50mod <- ifelse(two_years$LT50< -11, -11, two_years$LT50)
+#two_years$LT50mod <- ifelse(two_years$LT50< -11, -11, two_years$LT50)
 
 two_years <- two_years%>%
   group_by(Species, julian_date, year) %>%
-  dplyr::summarise(LT50mod_m=mean(LT50mod),
-                   LT50mod_sd=sd(LT50mod_m),
-                   LT50mod_se=sd(LT50mod_m)/sqrt(6))
+  dplyr::summarise(LT50mod_m=mean(LT50),
+                   LT50mod_sd=sd(LT50),
+                   LT50mod_se=sd(LT50)/sqrt(6))
 
-ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
+ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julian_date, y=LT50mod_m, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
+  geom_errorbar(aes(ymax=LT50mod_m+LT50mod_se,ymin=LT50mod_m-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -328,9 +280,9 @@ ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julia
   ggtitle("Acer saccharum")
 ASyears
 
-FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
+FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = julian_date, y=LT50mod_m, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
+  geom_errorbar(aes(ymax=LT50mod_m+LT50mod_se,ymin=LT50mod_m-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -346,9 +298,9 @@ FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = ju
   ggtitle("Fagus grandifolia")
 FGyears
 
-LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(x = julian_date, y=LT50mod, color=factor(year))) +
+LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(x = julian_date, y=LT50mod_m, color=factor(year))) +
   geom_point()+
-  geom_errorbar(aes(ymax=LT50mod+LT50mod_se,ymin=LT50mod-LT50mod_se))+
+  geom_errorbar(aes(ymax=LT50mod_m+LT50mod_se,ymin=LT50mod_m-LT50mod_se))+
   geom_smooth(stat="smooth",method="lm")+
   xlim(40,130) +
   ylim(-20,-5)+
@@ -378,13 +330,13 @@ two_panels <- mutate(two_panels, year=year(two_panels$Date))
 two_panels$julian_date <- yday(two_panels$Date)
 
 #force any LT50 values below -11 to be treated as -11
-two_panels$LT50mod <- ifelse(two_panels$LT50< -11, -11, two_panels$LT50)
+#two_panels$LT50mod <- ifelse(two_panels$LT50< -11, -11, two_panels$LT50)
 
 two_panels <- two_panels%>%
   group_by(Species, julian_date, year) %>%
-  dplyr::summarise(LT50mod.m=mean(LT50mod),
-                   LT50mod_sd=sd(LT50mod),
-                   LT50mod_se=sd(LT50mod)/sqrt(6))
+  dplyr::summarise(LT50mod.m=mean(LT50),
+                   LT50mod_sd=sd(LT50),
+                   LT50mod_se=sd(LT50)/sqrt(6))
 
 as.factor(two_panels$Species)
 
@@ -421,3 +373,51 @@ plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=
   ggtitle(2023)
 
 grid.arrange(plot2022, plot2023,nrow=2)
+
+#######################################################
+### garbage plot just to see where everything plots ###
+#######################################################
+
+ggplot(outputs, aes(x = State, y = LT50, shape = Species, color = Species)) +
+  geom_point(size = 2) +
+  xlab("Location") +
+  ylab("Temperature (°C)") +
+  theme_bw()
+
+#############################################################
+### garbage plot with mean LT50 values grouped by species ###
+#############################################################
+
+thresholds <- outputs%>%
+  group_by(Species)%>%
+  dplyr::summarise(across(LT15:LT95,list(mean=~mean(.),sd=~sd(.),se=~sd(./sqrt(6)))))
+
+ggplot(data=thresholds,aes(x=Species))+
+  geom_point(aes(y=LT50_mean))+
+  geom_errorbar(aes(ymin=LT50_mean-LT50_se,ymax=LT50_mean+LT50_se))+
+  ylab(bquote("Mean LT50 Temperature (°C)"))+
+  theme_bw()
+
+#################################
+###Tolerance at TN across time###
+#################################
+
+TN_outputs <- filter(outputs, State == "TN", Date >= "2022-01-01")
+
+TN_outputs$Species <- as.factor(TN_outputs$Species)
+is.factor(TN_outputs$Species)
+
+TN_mean <- TN_outputs%>%
+  group_by(Species,Date)%>%
+  dplyr::summarise(LT50mean= mean(LT50),
+                   LT50sd=sd(LT50),
+                   LT50se=sd(LT50)/sqrt(6))
+
+TN_plot <- ggplot(TN_outputs, aes(x=Date, y=LT50, color=Species))+
+  geom_point(position=position_dodge(0.5))+
+  xlab ("Date") +
+  ylab ("Temperature (°C)")+
+  theme_bw()+
+  theme(axis.text.x=element_text(angle=45,hjust=1))
+
+TN_plot

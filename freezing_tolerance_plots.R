@@ -12,11 +12,22 @@ library(readxl)
 library(gridExtra)
 library(MuMIn)
 
-#edit the below code when its time to save actual plots
+#edit the below code when its time to save actual figures
 ##ggsave(filename, plot = last_plot(),device = png(),path = NULL, scale = 1, +
 #width = NA, height = NA, units = c("in"), dpi = 300, limitsize = TRUE, bg = NULL)
 
+#data preparation for all figures
+
 outputs<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
+
+#create column for julian date
+outputs$julian_date <- yday(outputs$Date)
+
+#create column for month
+outputs <- mutate(outputs, month=month(outputs$Date))
+
+#create column for year
+outputs <- mutate(outputs, year=year(outputs$Date))
 
 ###########################################
 ##Before and After Mean last freeze plots##
@@ -27,15 +38,16 @@ outputs_LF <- outputs[complete.cases(outputs[,8]),]
 
 outputs_LF <- filter(outputs_LF, State == "TN", Date >= "2022-01-01")
 
+outputs_LF$last_freeze<-factor(outputs_LF$last_freeze,levels=c("before","after"))
+
 outputs_LF <- outputs_LF%>%
   group_by(Species, last_freeze)%>%
   dplyr::summarise(across(LT15:LT95,list(mean=~mean(.),sd=~sd(.),se=~sd(./sqrt(6)))))
 
-outputs_LF$last_freeze<-factor(outputs_LF$last_freeze,levels=c("before","after"))
-
 BA_species_plot <- ggplot(outputs_LF, aes(x=Species, y=LT50_mean, color=last_freeze))+
   geom_point(position=position_dodge(0.5))+
   geom_errorbar(aes(ymax=LT50_mean+LT50_se,ymin=LT50_mean-LT50_se), position=position_dodge(0.5))+
+  scale_color_manual(values = c("before" = "red", "after" = "blue"))+
   xlab ("Species") +
   ylab ("Temperature (°C)")+
   theme_bw()+
@@ -53,11 +65,9 @@ BA_species_plot
 ###Plot LT50 in TN by Julian date###
 ####################################
 
-outputs$julian_date <- yday(outputs$Date)
-
 outputs_julian <- filter(outputs, State == "TN")
 
-outputs_julian <- outputs%>%
+outputs_julian <- outputs_julian%>%
   group_by(Species, julian_date) %>%
   dplyr::summarise(LT15.m=mean(LT15), LT50mod=mean(LT50), LT95.m=mean(LT95),
                    LT50mod_sd=sd(LT50),
@@ -121,10 +131,6 @@ grid.arrange(jd1,jd2,jd3,nrow=3)
 #data prep
 outputs_year <- filter(outputs, State == "TN", Date >= "2022-01-01")
 
-outputs_year <- mutate(outputs_year, year=year(outputs_year$Date))
-
-outputs_year$julian_date <- yday(outputs_year$Date)
-
 outputs_year <- outputs_year%>%
   group_by(Species, year, julian_date) %>%
   dplyr::summarise(LT50mod=mean(LT50),
@@ -148,7 +154,6 @@ ASyear1<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2022)
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Acer saccharum - 2022")
-ASyear1
 
 ASyear2<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
@@ -166,7 +171,6 @@ ASyear2<-ggplot(data=subset(outputs_year, Species=="Acer saccharum"& year==2023)
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Acer saccharum - 2023")
-ASyear2
 
 LTyear1<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2022), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
@@ -184,7 +188,6 @@ LTyear1<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& ye
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Liriodendron tulipifera - 2022")
-LTyear1
 
 LTyear2<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
@@ -202,7 +205,6 @@ LTyear2<-ggplot(data=subset(outputs_year, Species=="Liriodendron tulipifera"& ye
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Liriodendron tulipifera - 2023")
-LTyear2
 
 FGyear1<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2022), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
@@ -220,7 +222,6 @@ FGyear1<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==20
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Fagus grandifolia - 2022")
-FGyear1
 
 FGyear2<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==2023), aes(x = julian_date, y=LT50mod)) +
   geom_point()+
@@ -238,7 +239,6 @@ FGyear2<-ggplot(data=subset(outputs_year, Species=="Fagus grandifolia"& year==20
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Fagus grandifolia - 2023")
-FGyear2
 
 grid.arrange(ASyear1,ASyear2, FGyear1, FGyear2, LTyear1, LTyear2,nrow=3)
 
@@ -248,10 +248,6 @@ grid.arrange(ASyear1,ASyear2, FGyear1, FGyear2, LTyear1, LTyear2,nrow=3)
 #########################################
 
 two_years <- filter(outputs, State == "TN", Date >= "2022-01-01")
-
-two_years <- mutate(two_years, year=year(two_years$Date))
-
-two_years$julian_date <- yday(two_years$Date)
 
 #force any LT50 values below -11 to be treated as -11
 #two_years$LT50mod <- ifelse(two_years$LT50< -11, -11, two_years$LT50)
@@ -278,7 +274,6 @@ ASyears<-ggplot(data=subset(two_years, Species=="Acer saccharum"), aes(x = julia
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Acer saccharum")
-ASyears
 
 FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = julian_date, y=LT50mod_m, color=factor(year))) +
   geom_point()+
@@ -296,7 +291,6 @@ FGyears<-ggplot(data=subset(two_years, Species=="Fagus grandifolia"), aes(x = ju
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle("Fagus grandifolia")
-FGyears
 
 LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(x = julian_date, y=LT50mod_m, color=factor(year))) +
   geom_point()+
@@ -314,7 +308,6 @@ LTyears<-ggplot(data=subset(two_years, Species=="Liriodendron tulipifera"), aes(
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   guides(col= guide_legend(title= "Year"))
-LTyears
 
 grid.arrange(ASyears, FGyears, LTyears,nrow=3)
 
@@ -324,10 +317,6 @@ grid.arrange(ASyears, FGyears, LTyears,nrow=3)
 #########################################
 
 two_panels <- filter(outputs, State == "TN", Date >= "2022-01-01")
-
-two_panels <- mutate(two_panels, year=year(two_panels$Date))
-
-two_panels$julian_date <- yday(two_panels$Date)
 
 #force any LT50 values below -11 to be treated as -11
 #two_panels$LT50mod <- ifelse(two_panels$LT50< -11, -11, two_panels$LT50)
@@ -342,11 +331,12 @@ as.factor(two_panels$Species)
 
 plot2022 <-ggplot(data=subset(two_panels, year=="2022"), aes(x = julian_date, y=LT50mod.m, color=Species)) +
   geom_point()+
-  geom_smooth(stat="smooth",method="lm")+
+  geom_smooth(stat="smooth",method="loess")+
   geom_errorbar(aes(ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se))+
+  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
   ylim(-12.5,-7.5)+
-  ylab("Temperature (°C)")+
+  ylab("LT50 (°C)")+
   xlab("Julian Date")+
   theme_bw()+
   theme(panel.border = element_blank(),  
@@ -355,14 +345,16 @@ plot2022 <-ggplot(data=subset(two_panels, year=="2022"), aes(x = julian_date, y=
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle(2022)
+plot2022
 
 plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=LT50mod.m, color=Species)) +
   geom_point()+
   geom_smooth(stat="smooth",method="lm")+
   geom_errorbar(aes(ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se))+
+  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
   ylim(-12.5,-7.5)+
-  ylab("Temperature (°C)")+
+  ylab("LT50 (°C)")+
   xlab("Julian Date")+
   theme_bw()+
   theme(panel.border = element_blank(),  
@@ -373,6 +365,8 @@ plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=
   ggtitle(2023)
 
 grid.arrange(plot2022, plot2023,nrow=2)
+
+############################################################################################################################################
 
 #######################################################
 ### garbage plot just to see where everything plots ###

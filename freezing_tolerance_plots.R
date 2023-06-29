@@ -353,7 +353,7 @@ plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=
   geom_errorbar(aes(ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se))+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
-  ylim(-12.5,-7.5)+
+  ylim(-20,-7.5)+
   ylab("LT50 (°C)")+
   xlab("Julian Date")+
   theme_bw()+

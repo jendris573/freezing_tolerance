@@ -38,10 +38,6 @@ pheno <- filter(pheno, species != "Quercus alba")
 
 #filter out 2021 data (incomplete year)
 #pheno <- filter(pheno, year != "2021")
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 
 pheno$species <- as.factor(pheno$species)
 
@@ -96,7 +92,6 @@ pheno_mean<-pheno_cut%>%
   summarize(mean_pheno=mean(phenology),
             sd_pheno=sd(phenology))
 
-=======
 summary(glht(mod2c, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
 
 #need to find the average phenology for each julian date before making the figure
@@ -105,7 +100,6 @@ pheno_mean<-pheno%>%
   summarize(mean_pheno=mean(phenology),
             sd_pheno=sd(phenology))
 
->>>>>>> Stashed changes
 mod_plot<-ggplot(data=pheno_mean,aes(x = julian_date, y=mean_pheno,group=species,colour=species)) +
   geom_point()+
   geom_line(aes(group=species))+

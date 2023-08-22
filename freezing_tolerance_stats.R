@@ -7,9 +7,10 @@ library(MuMIn)
 library(dplyr)
 library(pracma)
 library(multcomp)
+library(ggplot2)
 
 LT50_data<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
-LT50_data<-read_excel("C:/R/freezing_tolerance/Freezing Data.xlsx")
+LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx")
 
 LT50_data$Species <- as.factor(LT50_data$Species)
 
@@ -23,6 +24,7 @@ LT50_data <- mutate(LT50_data, year=year(LT50_data$Date))
 
 #bring in phenology data
 pheno<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/Phenology and Bud Forcing/phenology check.xlsx")
+pheno<-read_excel("C:/R/freezing_tolerance/phenology check.xlsx")
 
 #add in column for julian date
 pheno$julian_date <- yday(pheno$date)
@@ -83,15 +85,22 @@ dredge(mod2b)
 mod2c <- glm(phenology ~ date + year, data=pheno, family = poisson, na.action="na.fail" )
 summary(mod2c)
 
+summary(glht(mod2c, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
 
-summary(glht(mod2c, mcp(species= "Tukey")))
+#need to find the average phenology for each julian date before making the figure
+pheno_mean<-pheno%>%
+  group_by(year,species,julian_date)%>%
+  summarize(mean_pheno=mean(phenology),
+            sd_pheno=sd(phenology))
 
-mod_plot<-ggplot(data=pheno) +
-  geom_boxplot(aes(x = julian_date, y=pheno, group=julian_date))+
+mod_plot<-ggplot(data=pheno_mean,aes(x = julian_date, y=mean_pheno,group=species,colour=species)) +
+  geom_point()+
+  geom_line(aes(group=species))+
   ylab("pheno Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+
-  theme_bw()
+  theme_bw()+
+  facet_wrap(~year)
 
 mod_plot
 

@@ -13,7 +13,7 @@ library(readxl)
 library(writexl)
 
 #read in the raw data
-raw_data<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/Freezing Data.xlsx",sheet=2)
+raw_data<-read_excel("~/Documents/College/02- R code/freezing/Freezing Data.xlsx",sheet=2)
 
 #create an unique ID for each tree species/number/temp/date
 freeze_data <- mutate(raw_data, Unique_ID = paste(Date_Collected, Spec,State,Num, sep = "."))
@@ -162,5 +162,5 @@ LT$last_freeze <- ifelse(LT$State=="TN"&LT$Date=="2022-04-07", "before",LT$last_
 LT$last_freeze <- ifelse(LT$State=="TN"&LT$Date=="2022-04-19", "after",LT$last_freeze)
 
 #write LT values to the file
-write_xlsx(LT, "~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
+write_xlsx(LT, "~/Documents/College/02- R code/freezing/LT50 master.xlsx")
 

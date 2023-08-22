@@ -18,7 +18,7 @@ library(MuMIn)
 
 #data preparation for all figures
 
-outputs<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
+outputs<-read_excel("~/Documents/College/02- R code/freezing/LT50 master.xlsx")
 
 #create column for julian date
 outputs$julian_date <- yday(outputs$Date)
@@ -335,7 +335,7 @@ plot2022 <-ggplot(data=subset(two_panels, year=="2022"), aes(x = julian_date, y=
   geom_errorbar(aes(ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se))+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
-  ylim(-12.5,-7.5)+
+  ylim(-20,0)+
   ylab("LT50 (°C)")+
   xlab("Julian Date")+
   theme_bw()+
@@ -353,7 +353,7 @@ plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=
   geom_errorbar(aes(ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se))+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
-  ylim(-20,-7.5)+
+  ylim(-20,-5)+
   ylab("LT50 (°C)")+
   xlab("Julian Date")+
   theme_bw()+
@@ -363,6 +363,7 @@ plot2023 <-ggplot(data=subset(two_panels, year=="2023"), aes(x = julian_date, y=
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
   ggtitle(2023)
+plot2023
 
 grid.arrange(plot2022, plot2023,nrow=2)
 

@@ -37,8 +37,7 @@ pheno <- filter(pheno, species != "Ostrya virginiana")
 pheno <- filter(pheno, species != "Quercus alba")
 
 #filter out 2021 data (incomplete year)
-pheno <- filter(pheno, year != "2021")
-
+#pheno <- filter(pheno, year != "2021")
 
 pheno$species <- as.factor(pheno$species)
 
@@ -78,17 +77,16 @@ summary(mod2a)
 
 summary(glht(mod2a, mcp(Species= "Tukey")))
 
-mod2b <- glm(phenology ~ species * date * year, data=pheno, family = poisson, na.action="na.fail")
+pheno_cut <- filter(pheno, year != "2021")
+mod2b <- glm(phenology ~ species * date * year, data=pheno_cut, family = poisson, na.action="na.fail")
 summary(mod2b)
 dredge(mod2b)
 
-mod2c <- glm(phenology ~ date + year, data=pheno, family = poisson, na.action="na.fail" )
+mod2c <- glm(phenology ~ date + year, data=pheno_cut, family = poisson, na.action="na.fail" )
 summary(mod2c)
 
-summary(glht(mod2c, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
-
 #need to find the average phenology for each julian date before making the figure
-pheno_mean<-pheno%>%
+pheno_mean<-pheno_cut%>%
   group_by(year,species,julian_date)%>%
   summarize(mean_pheno=mean(phenology),
             sd_pheno=sd(phenology))

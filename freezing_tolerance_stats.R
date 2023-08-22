@@ -9,6 +9,7 @@ library(pracma)
 library(multcomp)
 
 LT50_data<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
+LT50_data<-read_excel("C:/R/freezing_tolerance/Freezing Data.xlsx")
 
 LT50_data$Species <- as.factor(LT50_data$Species)
 

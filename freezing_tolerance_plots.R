@@ -30,7 +30,7 @@ outputs <- mutate(outputs, month=month(outputs$Date))
 outputs <- mutate(outputs, year=year(outputs$Date))
 
 #Load NOAA Climate Data Online data
-TN<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/Tennessee.csv")
+TN<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/Tennessee_climate.csv")
 
 #keep only sewage plant
 TN <- TN%>%filter(NAME=="CLARKSVILLE SEWAGE PLANT, TN US")

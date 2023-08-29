@@ -26,6 +26,9 @@ phenology <- phenology%>%
 #omit any blank spots in the mean_phenology column
 phenology <- phenology[complete.cases(phenology[,4]),]
 
+#omit excess phenology checks
+phenology <- phenology
+
 ###############################################
 ### Plot to show three core species by year ###
 ###############################################

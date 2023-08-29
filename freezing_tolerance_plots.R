@@ -29,6 +29,25 @@ outputs <- mutate(outputs, month=month(outputs$Date))
 #create column for year
 outputs <- mutate(outputs, year=year(outputs$Date))
 
+#Load NOAA Climate Data Online data
+TN<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/Tennessee.csv")
+
+#keep only sewage plant
+TN <- TN%>%filter(NAME=="CLARKSVILLE SEWAGE PLANT, TN US")
+
+#omit NA in temperature recordings 
+TN<-TN[complete.cases(TN[,8]),]
+
+#create column for year
+TN <- mutate(TN, year=year(TN$DATE))
+
+#create column for month
+TN <- mutate(TN, month=month(TN$DATE))
+
+## create column for julian date##
+TN$julian_date <- yday(TN$DATE)
+
+
 ###########################################
 ##Before and After Mean last freeze plots##
 ###########################################
@@ -122,6 +141,61 @@ jd3<- ggplot(outputs_julian, aes(x = julian_date, y=LT50mod)) +
   ggtitle("Liriodendron tulipifera")
 
 grid.arrange(jd1,jd2,jd3,nrow=3)
+
+##############################################################
+###two panel plot with absolute coldest temp by julian date###
+##############################################################
+dbl_panel <- filter(outputs, State == "TN", Date >= "2022-01-01")
+
+jdate_TMIN <- TN %>%
+  group_by(julian_date) %>%
+  summarise(temp = min(TMIN, na.rm = TRUE))
+
+dbl_panel <- dbl_panel%>%
+  group_by(Species, julian_date, year) %>%
+  dplyr::summarise(LT50mod.m=mean(LT50),
+                   LT50mod_sd=sd(LT50),
+                   LT50mod_se=sd(LT50)/sqrt(6))
+
+as.factor(dbl_panel$Species)
+
+plot22 <-ggplot() +
+  geom_point(data=subset(dbl_panel, year=="2022"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
+  geom_errorbar(data= dbl_panel, aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), position = position_dodge(width = 2))+
+  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
+  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
+  xlim(40,130) +
+  ylim(-20,0)+
+  ylab("LT50 (°C)")+
+  xlab("Julian Date")+
+  theme_bw()+
+  theme(panel.border = element_blank(),  
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))+
+  ggtitle(2022)
+plot22
+
+plot23 <-ggplot() +
+  geom_point(data=subset(dbl_panel, year=="2023"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
+  geom_errorbar(data= dbl_panel, aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), position = position_dodge(width = 2))+
+  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
+  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
+  xlim(40,130) +
+  ylim(-20,0)+
+  ylab("LT50 (°C)")+
+  xlab("Julian Date")+
+  theme_bw()+
+  theme(panel.border = element_blank(),  
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))+
+  ggtitle(2023)
+plot23
+
+grid.arrange(plot22, plot23,nrow=2)
 
 #########################################
 ###Plot Comparing LT50 in 2022 vs 2023###

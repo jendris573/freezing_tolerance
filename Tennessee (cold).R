@@ -36,18 +36,16 @@ TN <- mutate(TN, month=month(TN$DATE))
 TN$julian_date <- yday(TN$DATE)
 
 #Load PRISM data
-TN_PRISM<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/TN_PRISM.csv")
-
-TN_PRISM$Date <- as.Date(TN_PRISM$Date)
+##TN_PRISM$Date <- as.Date(TN_PRISM$Date)
 
 #create column for year
-TN_PRISM <- mutate(TN_PRISM, year=year(TN_PRISM$Date))
+#TN_PRISM <- mutate(TN_PRISM, year=year(TN_PRISM$Date))
 
 #create column for month
-TN_PRISM <- mutate(TN_PRISM, month=month(TN_PRISM$Date))
+#TN_PRISM <- mutate(TN_PRISM, month=month(TN_PRISM$Date))
 
 ## create column for julian date##
-TN_PRISM$julian_date <- yday(TN_PRISM$Date)
+#TN_PRISM$julian_date <- yday(TN_PRISM$Date)
 
 ###########################
 ### Last freeze by year ###

@@ -1,4 +1,4 @@
-### Statisical analysis
+### Statistical analysis
 
 library(readxl)
 library(fitdistrplus)
@@ -85,7 +85,6 @@ dredge(mod2b)
 mod2c <- glm(phenology ~ date + year, data=pheno_cut, family = poisson, na.action="na.fail" )
 summary(mod2c)
 
-<<<<<<< Updated upstream
 #need to find the average phenology for each julian date before making the figure
 pheno_mean<-pheno_cut%>%
   group_by(year,species,julian_date)%>%

@@ -33,10 +33,10 @@ outputs <- mutate(outputs, year=year(outputs$Date))
 TN<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/Tennessee_climate.csv")
 
 #keep only sewage plant
-TN <- TN%>%filter(NAME=="CLARKSVILLE SEWAGE PLANT, TN US")
+#TN <- TN%>%filter(STATION=="USC00401795")
 
 #omit NA in temperature recordings 
-TN<-TN[complete.cases(TN[,8]),]
+TN<-TN[complete.cases(TN[,10]),]
 
 #create column for year
 TN <- mutate(TN, year=year(TN$DATE))
@@ -149,6 +149,17 @@ dbl_panel <- filter(outputs, State == "TN", Date >= "2022-01-01")
 
 jdate_TMIN <- TN %>%
   group_by(julian_date) %>%
+  filter(year>1979) %>%
+  summarise(temp = min(TMIN, na.rm = TRUE))
+
+TMIN_2022 <- TN %>%
+  group_by(julian_date) %>%
+  filter(year==2022) %>%
+  summarise(temp = min(TMIN, na.rm = TRUE))
+
+TMIN_2023 <- TN %>%
+  group_by(julian_date) %>%
+  filter(year==2023) %>%
   summarise(temp = min(TMIN, na.rm = TRUE))
 
 dbl_panel <- dbl_panel%>%
@@ -161,30 +172,35 @@ as.factor(dbl_panel$Species)
 
 plot22 <-ggplot() +
   geom_point(data=subset(dbl_panel, year=="2022"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
-  geom_errorbar(data= dbl_panel, aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), position = position_dodge(width = 2))+
+  geom_errorbar(data=subset(dbl_panel, year=="2022"), aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), width= 2, position = position_dodge(width = 2))+
   geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
+  geom_line(data=TMIN_2022, aes(x=julian_date, y=temp, color="grey"), lty="dashed")+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
+  scale_linetype_manual(values = c("2022 Temperatures" = "grey"))+
   xlim(40,130) +
-  ylim(-20,0)+
-  ylab("LT50 (°C)")+
+  ylim(-20,10)+
+  ylab("Temperature (°C)")+
   xlab("Julian Date")+
+  theme(legend.position="none")+
   theme_bw()+
   theme(panel.border = element_blank(),  
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))+
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_blank())+
   ggtitle(2022)
 plot22
 
 plot23 <-ggplot() +
   geom_point(data=subset(dbl_panel, year=="2023"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
-  geom_errorbar(data= dbl_panel, aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), position = position_dodge(width = 2))+
+  geom_errorbar(data=subset(dbl_panel, year=="2023"), aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), width = 2, position = position_dodge(width = 2))+
   geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
+  geom_line(data=TMIN_2023, aes(x=julian_date, y=temp, color="grey"), lty="dashed")+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
   xlim(40,130) +
-  ylim(-20,0)+
-  ylab("LT50 (°C)")+
+  ylim(-20,10)+
+  ylab("Temperature (°C)")+
   xlab("Julian Date")+
   theme_bw()+
   theme(panel.border = element_blank(),  

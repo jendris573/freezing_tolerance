@@ -18,23 +18,28 @@ phenology <- mutate(phenology, year=year(date))
 
 phenology$julian_date <- yday(phenology$date)
 
-#calculate mean phenology by julian date
-phenology <- phenology%>%
-  group_by(species, year, julian_date) %>%
-  dplyr::summarise(mean_phenology=mean(phenology))
-
 #omit any blank spots in the mean_phenology column
 phenology <- phenology[complete.cases(phenology[,4]),]
 
-#omit excess phenology checks
-phenology <- phenology
+#calculate mean phenology by julian date
+pheno <- phenology%>%
+  group_by(species, year, julian_date) %>%
+  dplyr::mutate(mean_phenology=mean(phenology))
+
+#calculate SD for phenology
+pheno<- pheno%>%
+  group_by(species, year, julian_date) %>%
+  mutate(pheno_sd = sd(phenology, na.rm=TRUE))
+
+
 
 ###############################################
 ### Plot to show three core species by year ###
 ###############################################
 
-maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
+maple_phenology<-ggplot(data=subset(pheno, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
   geom_line()+
+  geom_ribbon(aes(y = mean, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd, fill = variable), alpha = .2) +
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+

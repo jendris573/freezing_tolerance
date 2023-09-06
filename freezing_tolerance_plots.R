@@ -30,7 +30,7 @@ outputs <- mutate(outputs, month=month(outputs$Date))
 outputs <- mutate(outputs, year=year(outputs$Date))
 
 #Load NOAA Climate Data Online data
-TN<-read.csv("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/5- Climate/Tennessee_climate.csv")
+TN<-read.csv("Tennessee_climate.csv")
 
 #keep only sewage plant
 #TN <- TN%>%filter(STATION=="USC00401795")
@@ -181,7 +181,6 @@ plot22 <-ggplot() +
   ylim(-20,10)+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
-  theme(legend.position="none")+
   theme_bw()+
   theme(panel.border = element_blank(),  
         panel.grid.major = element_blank(),
@@ -189,6 +188,7 @@ plot22 <-ggplot() +
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
         axis.title.x = element_blank())+
+  theme(legend.position="top", legend.box = "horizontal")+
   ggtitle(2022)
 plot22
 
@@ -208,6 +208,7 @@ plot23 <-ggplot() +
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
+  theme(legend.position="none")+
   ggtitle(2023)
 plot23
 

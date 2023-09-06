@@ -181,7 +181,6 @@ plot22 <-ggplot() +
   ylim(-20,10)+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
-  theme(legend.position="none")+
   theme_bw()+
   theme(panel.border = element_blank(),  
         panel.grid.major = element_blank(),
@@ -189,6 +188,7 @@ plot22 <-ggplot() +
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
         axis.title.x = element_blank())+
+  theme(legend.position="top", legend.box = "horizontal")+
   ggtitle(2022)
 plot22
 
@@ -208,6 +208,7 @@ plot23 <-ggplot() +
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
+  theme(legend.position="none")+
   ggtitle(2023)
 plot23
 

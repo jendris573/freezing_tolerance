@@ -18,7 +18,7 @@ library(MuMIn)
 
 #data preparation for all figures
 
-outputs<-read_excel("~/Documents/College/02- R code/freezing/LT50 master.xlsx")
+outputs<-read_excel("data/LT50 master.xlsx")
 
 #create column for julian date
 outputs$julian_date <- yday(outputs$Date)
@@ -30,7 +30,7 @@ outputs <- mutate(outputs, month=month(outputs$Date))
 outputs <- mutate(outputs, year=year(outputs$Date))
 
 #Load NOAA Climate Data Online data
-TN<-read.csv("Tennessee_climate.csv")
+TN<-read.csv("data/Tennessee_climate.csv")
 
 #keep only sewage plant
 #TN <- TN%>%filter(STATION=="USC00401795")

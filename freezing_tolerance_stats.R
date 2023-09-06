@@ -9,7 +9,7 @@ library(pracma)
 library(multcomp)
 library(ggplot2)
 
-LT50_data<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/1- Freezing/Data/LT50 master.xlsx")
+LT50_data<-read_excel("data/LT50 master.xlsx")
 LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx")
 
 LT50_data$Species <- as.factor(LT50_data$Species)
@@ -23,7 +23,7 @@ LT50_data$julian_date <- yday(LT50_data$Date)
 LT50_data <- mutate(LT50_data, year=year(LT50_data$Date))
 
 #bring in phenology data
-pheno<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/Phenology and Bud Forcing/phenology check.xlsx")
+pheno<-read_excel("data/phenology_check.xlsx")
 pheno<-read_excel("C:/R/freezing_tolerance/phenology check.xlsx")
 
 #add in column for julian date

@@ -11,7 +11,7 @@ library(lubridate)
 library(readxl)
 library(gridExtra)
 
-phenology<-read_excel("~/Library/CloudStorage/GoogleDrive-jendris@my.apsu.edu/.shortcut-targets-by-id/1p5eHgH8eX9-QjkyyA3uRz5Lk7ontMZtO/Rehm lab - General/Trees/Phenology and Bud Forcing/phenology check.xlsx")
+phenology<-read_excel("data/phenology_check.xlsx")
 
 #data prep
 phenology <- mutate(phenology, year=year(date))
@@ -22,24 +22,22 @@ phenology$julian_date <- yday(phenology$date)
 phenology <- phenology[complete.cases(phenology[,4]),]
 
 #calculate mean phenology by julian date
-pheno <- phenology%>%
+phenology <- phenology%>%
   group_by(species, year, julian_date) %>%
   dplyr::mutate(mean_phenology=mean(phenology))
 
 #calculate SD for phenology
-pheno<- pheno%>%
+phenology <- pheno%>%
   group_by(species, year, julian_date) %>%
   mutate(pheno_sd = sd(phenology, na.rm=TRUE))
-
-
 
 ###############################################
 ### Plot to show three core species by year ###
 ###############################################
 
-maple_phenology<-ggplot(data=subset(pheno, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
+maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
   geom_line()+
-  geom_ribbon(aes(y = mean, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd, fill = variable), alpha = .2) +
+  geom_ribbon(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+
@@ -48,7 +46,8 @@ maple_phenology<-ggplot(data=subset(pheno, species=="Acer saccharum"), aes(x = j
 maple_phenology
 
 poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifera"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
-  geom_line()+
+  geom_boxplot()+
+  geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+
@@ -57,7 +56,9 @@ poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifer
 poplar_phenology
 
 beech_phenology<-ggplot(data=subset(phenology, species=="Fagus grandifolia"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
-  geom_line()+
+  geom_point()+
+  geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
+  geom_smooth(method="lm")+
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+

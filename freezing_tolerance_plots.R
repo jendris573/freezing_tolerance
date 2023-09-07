@@ -145,72 +145,56 @@ grid.arrange(jd1,jd2,jd3,nrow=3)
 ##############################################################
 ###two panel plot with absolute coldest temp by julian date###
 ##############################################################
-dbl_panel <- filter(outputs, State == "TN", Date >= "2022-01-01")
 
-jdate_TMIN <- TN %>%
-  group_by(julian_date) %>%
-  filter(year>1979) %>%
-  summarise(temp = min(TMIN, na.rm = TRUE))
-
-TMIN_2022 <- TN %>%
-  group_by(julian_date) %>%
-  filter(year==2022) %>%
-  summarise(temp = min(TMIN, na.rm = TRUE))
-
-TMIN_2023 <- TN %>%
-  group_by(julian_date) %>%
-  filter(year==2023) %>%
-  summarise(temp = min(TMIN, na.rm = TRUE))
-
-dbl_panel <- dbl_panel%>%
-  group_by(Species, julian_date, year) %>%
-  dplyr::summarise(LT50mod.m=mean(LT50),
-                   LT50mod_sd=sd(LT50),
-                   LT50mod_se=sd(LT50)/sqrt(6))
-
-as.factor(dbl_panel$Species)
-
-cols <- c("2022" = "solid", "Since 1980" = "dashed")
+#stack jdate_TMIN and TMIN_2022 into a single dataframe
+jdate_TMIN$year="1980"
+TMIN_2022$year="2022"
+TMIN_2023$year="2023"
+new<-rbind(jdate_TMIN,TMIN_2022,TMIN_2023)
 
 plot22 <-ggplot() +
   geom_point(data=subset(dbl_panel, year=="2022"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
   geom_errorbar(data=subset(dbl_panel, year=="2022"), aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), width= 2, position = position_dodge(width = 2))+
-  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, linetype="solid", color="grey"))+
-  geom_line(data=TMIN_2022, aes(x=julian_date, y=temp, linetype="dashed", color="black"))+
+  geom_line(data=subset(new,year!="2023"), aes(x=julian_date, y=temp, group=year,linetype=year))+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
-  scale_linetype_manual("Minimum Temperatures", values = cols)+
+  scale_linetype_manual("Minimum temperature",values = c("2022"=1,"1980"=2),labels=c("Since 1980","2022"))+
   xlim(40,130) +
   ylim(-20,10)+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
   theme_bw()+
-  theme(panel.border = element_blank(),  
-       panel.grid.major = element_blank(),
-       panel.grid.minor = element_blank(),
-       panel.background = element_blank(),
-       axis.line = element_line(colour = "black"),
-       axis.title.x = element_blank())+
-  theme(legend.position="top", legend.box = "horizontal")+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.title.x = element_blank(),
+        axis.text.x=element_blank(),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.8"), legend.box = "vertical")+
   ggtitle(2022)
 plot22
 
 plot23 <-ggplot() +
   geom_point(data=subset(dbl_panel, year=="2023"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
   geom_errorbar(data=subset(dbl_panel, year=="2023"), aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), width = 2, position = position_dodge(width = 2))+
-  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
-  geom_line(data=TMIN_2023, aes(x=julian_date, y=temp, color="grey"), lty="dashed")+
-  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
+  geom_line(data=subset(new,year!="2022"), aes(x=julian_date, y=temp, group=year,linetype=year))+
+  scale_linetype_manual("Minimum temperature",values = c("2023"=1,"1980"=2),labels=c("Since 1980","2023"))+
+  scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"),guide="none")+
   xlim(40,130) +
   ylim(-20,10)+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
   theme_bw()+
-  theme(panel.border = element_blank(),  
+  theme(panel.border = element_blank(), 
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))+
-  theme(legend.position="none")+
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"))+
   ggtitle(2023)
 plot23
 

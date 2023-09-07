@@ -36,8 +36,9 @@ phenology <- pheno%>%
 ###############################################
 
 maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
+  geom_point()+
+  geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
   geom_line()+
-  geom_ribbon(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+
@@ -46,8 +47,9 @@ maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x
 maple_phenology
 
 poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifera"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
-  geom_boxplot()+
+  geom_point()+
   geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
+  geom_line()+
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+
@@ -58,7 +60,7 @@ poplar_phenology
 beech_phenology<-ggplot(data=subset(phenology, species=="Fagus grandifolia"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
   geom_point()+
   geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
-  geom_smooth(method="lm")+
+  geom_line()+
   ylab("Phenology Code")+
   xlab("Julian Date")+
   ylim(-1, 5)+

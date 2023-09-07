@@ -170,24 +170,26 @@ dbl_panel <- dbl_panel%>%
 
 as.factor(dbl_panel$Species)
 
+cols <- c("2022" = "solid", "Since 1980" = "dashed")
+
 plot22 <-ggplot() +
   geom_point(data=subset(dbl_panel, year=="2022"), aes(x = julian_date, y=LT50mod.m, color= Species), position = position_dodge(width = 2))+
   geom_errorbar(data=subset(dbl_panel, year=="2022"), aes(x= julian_date, ymax=LT50mod.m+LT50mod_se,ymin=LT50mod.m-LT50mod_se, color= Species), width= 2, position = position_dodge(width = 2))+
-  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, color="grey"))+
-  geom_line(data=TMIN_2022, aes(x=julian_date, y=temp, color="grey"), lty="dashed")+
+  geom_line(data=jdate_TMIN, aes(x=julian_date, y=temp, linetype="solid", color="grey"))+
+  geom_line(data=TMIN_2022, aes(x=julian_date, y=temp, linetype="dashed", color="black"))+
   scale_color_manual(values = c("Acer saccharum" = "red", "Liriodendron tulipifera" = "blue", "Fagus grandifolia" = "black"))+
-  scale_linetype_manual(values = c("2022 Temperatures" = "grey"))+
+  scale_linetype_manual("Minimum Temperatures", values = cols)+
   xlim(40,130) +
   ylim(-20,10)+
   ylab("Temperature (°C)")+
   xlab("Julian Date")+
   theme_bw()+
   theme(panel.border = element_blank(),  
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        axis.line = element_line(colour = "black"),
-        axis.title.x = element_blank())+
+       panel.grid.major = element_blank(),
+       panel.grid.minor = element_blank(),
+       panel.background = element_blank(),
+       axis.line = element_line(colour = "black"),
+       axis.title.x = element_blank())+
   theme(legend.position="top", legend.box = "horizontal")+
   ggtitle(2022)
 plot22

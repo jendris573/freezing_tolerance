@@ -9,11 +9,14 @@ library(pracma)
 library(multcomp)
 library(ggplot2)
 
+#read in data
 LT50_data<-read_excel("data/LT50 master.xlsx")
-LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx")
+LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx") #Evan
 
+#species as a factor
 LT50_data$Species <- as.factor(LT50_data$Species)
 
+#filter for only TN data
 LT50_data <- filter(LT50_data, State=="TN")
 
 #add in column for julian date
@@ -24,7 +27,7 @@ LT50_data <- mutate(LT50_data, year=year(LT50_data$Date))
 
 #bring in phenology data
 pheno<-read_excel("data/phenology_check.xlsx")
-pheno<-read_excel("C:/R/freezing_tolerance/phenology check.xlsx")
+pheno<-read_excel("C:/R/freezing_tolerance/phenology check.xlsx") #Evan
 
 #add in column for julian date
 pheno$julian_date <- yday(pheno$date)
@@ -37,47 +40,38 @@ pheno <- filter(pheno, species != "Ostrya virginiana")
 pheno <- filter(pheno, species != "Quercus alba")
 
 #filter out 2021 data (incomplete year)
-#pheno <- filter(pheno, year != "2021")
+pheno <- filter(pheno, year != "2021")
 
+#species as a factor for phenology data
 pheno$species <- as.factor(pheno$species)
 
 ##################################
 ### Begin statistical analysis ###
 ##################################
 
+#histogram to view LT50 data
 hist(LT50_data$LT50)
 
 #look at distribution of LT50s without considering treatment type
 descdist(LT50_data$LT50,discrete=FALSE)
 
-#force any LT50 values below -11 to be treated as -11
-#LT50_data$LT50mod <- ifelse(LT50_data$LT50< -11, -11, LT50_data$LT50)
-
-#hist(LT50_data$LT50mod)
-
 #look at distribution of LT50mods without considering treatment type
 descdist(LT50_data$LT50,discrete=FALSE)
-
-#Three way interaction (no significance)
-#mod1<-glm(LT50~Species*julian_date*year,data=LT50_data,na.action="na.fail")
-
-#three way interaction with -11 curtail
-#mod1<-glm(LT50mod~Species*julian_date*year,data=LT50_data,na.action="na.fail")
-
-#summary(mod1)
-#dredge(mod1)
-#dredge is being used for model selection to see all possible subsets
 
 mod2<-glm(LT50~(Species+julian_date+year)^2,data=LT50_data, na.action="na.fail")
 summary(mod2)
 dredge(mod2)
 
+#final model for LT50 
 mod2a <- glm(LT50 ~ Species + julian_date, data=LT50_data)
 summary(mod2a)
 
 summary(glht(mod2a, mcp(Species= "Tukey")))
 
+#filter out 2021 data since there is no corresponding LT50 data for 2021
 pheno_cut <- filter(pheno, year != "2021")
+
+#final model for phenology
 mod2b <- glm(phenology ~ species * date * year, data=pheno_cut, family = poisson, na.action="na.fail")
 summary(mod2b)
 dredge(mod2b)
@@ -113,6 +107,16 @@ mod_plot
 ##############################################
 ### Excess models that are not the best fit###
 ##############################################
+
+#Three way interaction (no significance)
+mod1<-glm(LT50~Species*julian_date*year,data=LT50_data,na.action="na.fail")
+
+#three way interaction with -11 curtail
+mod1<-glm(LT50mod~Species*julian_date*year,data=LT50_data,na.action="na.fail")
+
+summary(mod1)
+dredge(mod1) #dredge is being used for model selection to see all possible subsets
+
 mod3<-glm(LT50mod~Species*julian_date+Species*year,data=LT50_data)
 summary(mod3)
 

@@ -8,6 +8,7 @@ library(dplyr)
 library(pracma)
 library(multcomp)
 library(ggplot2)
+library(tabglm)
 
 #read in data
 LT50_data<-read_excel("data/LT50 master.xlsx")
@@ -67,6 +68,8 @@ mod2a <- glm(LT50 ~ Species + julian_date, data=LT50_data)
 summary(mod2a)
 
 summary(glht(mod2a, mcp(Species= "Tukey")))
+
+
 
 #filter out 2021 data since there is no corresponding LT50 data for 2021
 pheno_cut <- filter(pheno, year != "2021")

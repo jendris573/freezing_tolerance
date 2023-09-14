@@ -127,5 +127,3 @@ year3<-ggplot(data=subset(phenology, year==2023), aes(x = julian_date, y=mean_ph
 year2
 
 grid.arrange(year1, year2, year3, nrow=3)
-
-#test

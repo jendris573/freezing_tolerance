@@ -27,7 +27,7 @@ phenology <- phenology%>%
   dplyr::mutate(mean_phenology=mean(phenology))
 
 #calculate SD for phenology
-phenology <- pheno%>%
+phenology <- phenology%>%
   group_by(species, year, julian_date) %>%
   mutate(pheno_sd = sd(phenology, na.rm=TRUE))
 

@@ -8,11 +8,11 @@ library(dplyr)
 library(pracma)
 library(multcomp)
 library(ggplot2)
-library(tabglm)
+
 
 #read in data
 LT50_data<-read_excel("data/LT50 master.xlsx")
-LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx") #Evan
+#LT50_data<-read_excel("C:/R/freezing_tolerance/LT50 master.xlsx") #Evan
 
 #species as a factor
 LT50_data$Species <- as.factor(LT50_data$Species)
@@ -46,17 +46,14 @@ pheno <- filter(pheno, year != "2021")
 #species as a factor for phenology data
 pheno$species <- as.factor(pheno$species)
 
-##################################
-### Begin statistical analysis ###
-##################################
+#################################
+### LT50 statistical analysis ###
+#################################
 
 #histogram to view LT50 data
 hist(LT50_data$LT50)
 
 #look at distribution of LT50s without considering treatment type
-descdist(LT50_data$LT50,discrete=FALSE)
-
-#look at distribution of LT50mods without considering treatment type
 descdist(LT50_data$LT50,discrete=FALSE)
 
 mod2<-glm(LT50~(Species+julian_date+year)^2,data=LT50_data, na.action="na.fail")
@@ -69,32 +66,24 @@ summary(mod2a)
 
 summary(glht(mod2a, mcp(Species= "Tukey")))
 
-
+######################################
+### Phenology statistical analysis ###
+######################################
 
 #filter out 2021 data since there is no corresponding LT50 data for 2021
 pheno_cut <- filter(pheno, year != "2021")
 
 #final model for phenology
-mod2b <- glm(phenology ~ species * date * year, data=pheno_cut, family = poisson, na.action="na.fail")
-summary(mod2b)
-dredge(mod2b)
+pheno_mod2c <- glm(phenology ~ date + year, data=pheno_cut, family = poisson, na.action="na.fail" )
+summary(pheno_mod2c)
 
-mod2c <- glm(phenology ~ date + year, data=pheno_cut, family = poisson, na.action="na.fail" )
-summary(mod2c)
+summary(glht(pheno_mod2c, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
 
 #need to find the average phenology for each julian date before making the figure
 pheno_mean<-pheno_cut%>%
   group_by(year,species,julian_date)%>%
   summarize(mean_pheno=mean(phenology),
-            sd_pheno=sd(phenology))
-
-summary(glht(mod2c, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
-
-#need to find the average phenology for each julian date before making the figure
-pheno_mean<-pheno%>%
-  group_by(year,species,julian_date)%>%
-  summarize(mean_pheno=mean(phenology),
-            sd_pheno=sd(phenology))
+            sd_pheno=sd(phenology)) 
 
 mod_plot<-ggplot(data=pheno_mean,aes(x = julian_date, y=mean_pheno,group=species,colour=species)) +
   geom_point()+
@@ -154,5 +143,7 @@ LT50_data$LT50trans <- LT50_data$LT50mod/mean(LT50_data$LT50mod)
 hist(LT50_data$LT50trans)
 
 
-
+mod2b <- glm(phenology ~ species * date * year, data=pheno_cut, family = poisson, na.action="na.fail")
+summary(mod2b)
+dredge(mod2b)
 

@@ -243,19 +243,13 @@ phenology$species <- as.factor(phenology$species)
 ### LT50 statistical analysis ###
 #################################
 
-#histogram to view LT50 data
-hist(LT50_data$LT50)
-
-#look at distribution of LT50s without considering treatment type
-descdist(LT50_data$LT50,discrete=FALSE)
-
 #global model
-LT50_model<-glm(LT50~(Species+julian_date+year)^2,data=LT50_data, na.action="na.fail")
+LT50_model<-glm(LT50~(Species+julian_date+year)^2,data=outputs, na.action="na.fail")
 summary(LT50_model)
 dredge(LT50_model)
 
 #final model for LT50 
-LT50_final_model <- glm(LT50 ~ Species + julian_date, data=LT50_data)
+LT50_final_model <- glm(LT50 ~ Species + julian_date, data=outputs)
 summary(LT50_final_model)
 
 summary(glht(LT50_final_model, mcp(Species= "Tukey")))
@@ -270,7 +264,7 @@ summary(phenology_model)
 dredge(phenology_model)
 
 #final model for phenology
-pheno_mod <- glm(phenology ~ date + year, data=pheno_cut, family = poisson, na.action="na.fail" )
+pheno_mod <- glm(phenology ~ date + year, data=phenology, family = poisson, na.action="na.fail" )
 summary(pheno_mod)
 
-summary(glht(pheno_mod, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
+summary(glht(phenology, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor

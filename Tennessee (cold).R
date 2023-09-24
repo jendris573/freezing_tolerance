@@ -1,20 +1,21 @@
-### Statistical analysis for Clarksville Climate
-### Written by Joe Endris
-### With input from Dr Evan Rehm
+## R code to manipulate and plot climate data relating to the APSU Farm ##
+## Written by Joe Joe Endris ##
 
-library(readxl)
-library(writexl)
-library(fitdistrplus)
-library(lubridate)
-library(MuMIn)
 library(dplyr)
-library(pracma)
-library(multcomp)
+library(tidyr)
 library(ggplot2)
+library(ggfortify)
+library(multcomp)
+library(multcompView)
+library(lubridate)
+library(readxl)
+library(gridExtra)
+library(MuMIn)
+library(readr)
 
-########################
-### Data Preparation ###
-########################
+##################################
+### Data entry and preparation ###
+##################################
 
 #Load NOAA Climate Data Online data
 tenn_clim<-read.csv("data/Tennessee_climate.csv")
@@ -31,102 +32,12 @@ tenn_clim <- mutate(tenn_clim, month=month(tenn_clim$DATE))
 ## create column for julian date##
 tenn_clim$julian_date <- yday(tenn_clim$DATE)
 
-#omit NA in precipitation recordings 
-precip<-tenn_clim[complete.cases(tenn_clim[,6]),]
-#omit NA in TMAX recordings 
-TMAX<-tenn_clim[complete.cases(tenn_clim[,9]),]
-#omit NA in TMIN recordings 
-TMIN<-tenn_clim[complete.cases(tenn_clim[,10]),]
-
-phenology <- read_xlsx("data/phenology_check.xlsx")
-
-#create column for year
-phenology <- mutate(phenology, year=year(date))
-
-#create column for julian date
-phenology$julian_date <- yday(phenology$date)
-
-###########################
-### Climate data points ###
-###########################
-
-#determine annual precipitation values
-precip <- precip %>%
-  group_by(year) %>%
-  dplyr::summarise(annual_precip = sum(PRCP))
-
-#average annual TMAX
-TMAX <- TMAX %>%
-  group_by(year) %>%
-  dplyr::summarise(annual_TMAX = mean(TMAX))
-
-#average annual TMIN
-TMIN <- TMIN %>%
-  group_by(year) %>%
-  dplyr::summarise(annual_TMIN = mean(TMIN))
-
-#create one data frame with all the data
-climate <- cbind(precip, TMAX$annual_TMAX, TMIN$annual_TMIN) %>%
-  rename("TMAX" = "TMAX$annual_TMAX",
-         "TMIN" = "TMIN$annual_TMIN")
-
-#calculate the mean high temperature
-mean_TMAX <-   climate %>%
-  dplyr::summarise(annual_TMAX = mean(TMAX))
-#calculate the mean low temperature
-mean_TMIN <-   climate %>%
-  dplyr::summarise(annual_TMIN = mean(TMIN))
-#calculate the mean precipitation
-mean_precip <-   climate %>%
-  dplyr::summarise(mean_precip = mean(annual_precip))
-
-
-climate1980 <- climate %>%
-  filter(year>1979) %>%
-  filter(year<2023)
-
-climate_plot <- ggplot() +
-  geom_point(data = climate1980, aes(x=year, y=TMAX, color = TMAX))+
-  geom_point(data = climate1980, aes(x= year, y=TMIN, color = TMIN))+
-  #scale_color_manual(values = c("TMAX" = "red", "TMIN" = "blue"))+
-  labs(y=expression("Temperature (°C)"))+
-  xlab("Year")+
-  theme_bw()+
-  theme(panel.border = element_blank(), 
-        panel.grid.major = element_blank(),
-        panel.grid.minor = element_blank(),
-        panel.background = element_blank(),
-        axis.line = element_line(colour = "black"),
-        axis.title.x = element_blank(),
-        axis.text.x=element_blank(),
-        legend.background = element_blank(),
-        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.1","0.9"), legend.box = "vertical")+
-  ggtitle("Clarksville, TN climate since 1980")
-  
-climate_plot
-
-##########################
-### Statistical Models ###
-##########################
-
-#filter for 1980-2022
-tenn1980 <- tenn_clim %>%
-  filter(year>1979) %>%
-  filter(year<2023)
-
-#basic model to deterimine 
-clim_mod1 <- glm(TMIN ~ julian_date + year , data=tenn_clim)
-
-summary(clim_mod1)
-dredge(clim_mod1)
-
 ###########################
 ### Last freeze by year ###
 ###########################
 
 #calculate last day below freezing for each year
-last_freeze <- tenn_clim%>%
+last_freeze <- TN%>%
   filter(TMIN< -2)%>%
   filter(year(DATE)>1979)%>%
   filter(julian_date<180)%>%
@@ -136,12 +47,8 @@ last_freeze <- tenn_clim%>%
 #calculate mean last freeze for TN since 1980
 mean(as.numeric(last_freeze$julian_date))
 
-#statisical model for changes in last freeze date
-last_freeze_mod <- lm(julian_date~year, data=last_freeze)
-summary(last_freeze_mod)
-
 #calculate last day below freezing for 2022
-last_freeze_2022 <- tenn_clim%>%
+last_freeze_2022 <- TN%>%
   filter(TMIN< -2)%>%
   filter(year(DATE)==2022)%>%
   filter(julian_date<180)%>%
@@ -150,7 +57,7 @@ last_freeze_2022 <- tenn_clim%>%
 last_freeze_2022
 
 #calculate last day below freezing for 2023
-last_freeze_2023 <- tenn_clim%>%
+last_freeze_2023 <- TN%>%
   filter(TMIN< -2)%>%
   filter(year(DATE)==2023)%>%
   filter(julian_date<180)%>%
@@ -158,21 +65,60 @@ last_freeze_2023 <- tenn_clim%>%
   filter(row_number()==n())
 last_freeze_2023
 
-##############################################
-### The number of days below -2 since 1980 ###
-##############################################
+#################################
+### Absolute Low Temp by Year ###
+#################################
 
-#determine number of spring days below -2
-TN_freeze <- tenn1980 %>%
+#Determine absolute coldest day by year
+TN$DATE <- as.Date(TN$DATE)
+class(TN$DATE)
+
+yearly_TMIN <- TN %>%
+  group_by(year) %>%
+  summarise(temp = min(TMIN, na.rm = TRUE))
+
+#####################################
+### Mean Low Temps by Julian Date ###
+#####################################
+
+#calculate mean monthly low
+TN_monthly_low <- TN %>%
+  group_by(julian_date) %>%
+  filter(julian_date<152) %>%
+  summarise(temp=mean(TMIN))
+
+## create graph for mean low temps by Julian date ##
+TN_TMIN_plot <-
+  ggplot(TN_monthly_low, aes(x = julian_date, y = temp)) +
+  geom_line() +
+  labs(title = "Mean Lowest Temperature by Julian Date",
+       y= "Temperature (Celcius)",
+       x= "Julian Date") + 
+  theme_bw(base_size = 15)+
+  theme(panel.border = element_blank(),  
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"))
+
+TN_TMIN_plot
+
+#############################################
+### Determine the number of days below -2 ###
+#############################################
+
+#Number of Days Below -2
+TN_freeze <- TN %>%
   group_by(year) %>%
   filter(month <6) %>%
   summarise(total_days=sum(TMIN < -2))
 
 #plot Number of Days Below -2 since 1980
 TN_freeze_plot <- TN_freeze %>%
+  filter(year > 1980)%>%
   ggplot(aes(x = year, y = total_days)) +
   geom_point(color="black") +
-  geom_smooth(method="lm")+
+  geom_smooth(method="loess")+
   labs(title = "Number of Days Below -2(C)",
        subtitle = "Clarksville, TN",
        y= "Number of Days",
@@ -189,32 +135,32 @@ TN_freeze_plot
 mod_neg2 <- lm(total_days~year, data=TN_freeze)
 summary(mod_neg2)
 
+
+#determine number of days below -2
+
+
+
 #######################################
 ### Absolute Low by year since 1980 ###
 #######################################
 
-#Determine absolute coldest day by year
-tenn_clim$DATE <- as.Date(tenn_clim$DATE)
-class(tenn_clim$DATE)
+yearly_TMIN_1980 <-  yearly_TMIN %>%
+  filter(year>1979)
 
-yearly_TMIN <- tenn1980 %>%
-  group_by(year) %>%
-  summarise(temp = min(TMIN, na.rm = TRUE))
-
-TMIN_1980 <- ggplot(yearly_TMIN, aes(x=year, y=temp))+
+TMIN_1980 <- ggplot(yearly_TMIN_1980, aes(x=year, y=temp))+
   geom_point()+
   geom_smooth(method="lm")
 TMIN_1980
 
-absolute_TMIN <- lm(temp~year, data=yearly_TMIN)
-summary(absolute_TMIN)
+mod1 <- lm(temp~year, data=yearly_TMIN_1980)
+summary(mod1)
 
 #########################################
 ### Four panel temperature comparison ###
 #########################################
 
 # Plot mean low temp for March and April since 1980
-UL <- tenn_clim %>%
+UL <- TN %>%
   filter(year>1980) %>%
   group_by(year) %>%
   filter(julian_date>59) %>%
@@ -258,7 +204,7 @@ summary(mod2)
 
 # Comparison of 2007 and 2022/2023
 
-BL <- tenn_clim%>%
+BL <- TN%>%
   filter(year == 2007|year==2023|year==2022)%>%
   filter(month == 3 | month == 4) %>%
   filter(julian_date<121)
@@ -284,7 +230,7 @@ BL_plot
 
 # Mean temp by Julian Date for 2007, 2022, and 2023
 
-BR <- tenn_clim_PRISM %>%
+BR <- TN_PRISM %>%
   filter(year == 2007|year==2023|year==2022)%>%
   filter(julian_date<121)
 
@@ -294,7 +240,7 @@ BR_plot <- ggplot(BR, aes(x=julian_date, y=tmean, color=year, group=year))+
   geom_line()+
   geom_smooth(method="lm", se= FALSE)+
   scale_color_manual(breaks= c("2007", "2022", "2023"),
-                     values = c("black", "blue", "red"))+
+                   values = c("black", "blue", "red"))+
   labs(title = "Mean temperature by Julian date for 2007, 2022, and 2023",
        y= "Temperature (C)",
        x= "Julian Date") + 
@@ -312,7 +258,7 @@ BR_plot
 ### Mean low temperatuers for March and April ###
 #################################################
 
-March_mean_tmin <- tenn_clim %>%
+March_mean_tmin <- TN %>%
   filter(year>=1980) %>%
   group_by(month, year) %>%
   filter(julian_date>60) %>%
@@ -322,7 +268,7 @@ March_mean_tmin <- tenn_clim %>%
 mod3 <- lm(temp ~ year, data = March_mean_tmin)
 summary(mod3)
 
-April_mean_tmin <- tenn_clim %>%
+April_mean_tmin <- TN %>%
   filter(year>=1980) %>%
   group_by(year) %>%
   filter(julian_date>91) %>%
@@ -340,9 +286,9 @@ summary(mod4)
 ### plot monthly mean low temps for Jan-May ###
 ###############################################
 
-as.Date(tenn_clim$DATE)
+as.Date(TN$DATE)
 
-TN_month_mean <- tenn_clim %>%
+TN_month_mean <- TN %>%
   group_by(month=lubridate::floor_date(DATE, "month")) %>%
   summarise(mean_low = mean(TMIN))
 
@@ -364,4 +310,3 @@ TN_monthly_mean_plot <- ggplot(TN_month_mean, aes(x= month, y=mean_low))+
        x= "Month") + theme_bw(base_size = 15)
 
 TN_monthly_mean_plot
-

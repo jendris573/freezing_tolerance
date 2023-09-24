@@ -15,6 +15,7 @@ library(gridExtra)
 library(MuMIn)
 library(fitdistrplus)
 library(pracma)
+library(gtsummary)
 
 
 #edit the below code when its time to save actual figures
@@ -151,7 +152,7 @@ plot23
 
 grid.arrange(plot22, plot23,nrow=2)
 
-############################################################
+n############################################################
 ### Plot to show phenology of three core species by year ###
 ############################################################
 
@@ -165,12 +166,14 @@ phenology <- phenology%>%
   group_by(species, year, julian_date) %>%
   mutate(pheno_sd = sd(phenology, na.rm=TRUE))
 
+phenology[,10][phenology[,10]==0] <- NA
+
 maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
   geom_point()+
   geom_errorbar(aes(y = mean_phenology, ymin = mean_phenology - pheno_sd, ymax = mean_phenology + pheno_sd), alpha = .2) +
   geom_line()+
   labs(x="", y="", colour = "Year")+
-  scale_color_manual(values = c("2022" = "grey", "2023" = "black"))+
+  scale_color_manual(values = c("2022" = "grey50", "2023" = "black"))+
   ylim(-1, 5)+
   theme_bw()+
   theme(axis.title.x = element_markdown())+
@@ -181,8 +184,9 @@ maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
         legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.05","0.75"))+
-  ggtitle(expression(italic("Acer saccharum")))
+        legend.position=c("0.08","0.7"))+
+  annotate("text", x=40,y=4.5,label= expression(italic("Acer saccharum")), hjust=0)
+
 maple_phenology
 
 beech_phenology<-ggplot(data=subset(phenology, species=="Fagus grandifolia"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
@@ -198,8 +202,10 @@ beech_phenology<-ggplot(data=subset(phenology, species=="Fagus grandifolia"), ae
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))+
-  ggtitle(expression(italic("Fagus grandifolia")))
+        axis.line = element_line(colour = "black"),
+        text=element_text(size=14))+
+  annotate("text", x=40,y=4,label= expression(italic("Fagus grandifolia")), hjust=0, size=8)
+
 beech_phenology
 
 poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifera"), aes(x = julian_date, y=mean_phenology, color=factor(year))) +
@@ -216,7 +222,8 @@ poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifer
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"))+
-  ggtitle(expression(italic("Liriodendron tulipifera")))
+  annotate("text", x=40,y=4.5,label= expression(italic("Liriodendron tulipifera")), hjust=0)
+
 poplar_phenology
 
 grid.arrange(maple_phenology, beech_phenology, poplar_phenology, nrow=3)
@@ -267,4 +274,34 @@ dredge(phenology_model)
 pheno_mod <- glm(phenology ~ date + year, data=phenology, family = poisson, na.action="na.fail" )
 summary(pheno_mod)
 
-summary(glht(phenology, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
+#summary(glht(phenology, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
+
+#########################
+### Gtsummmary tables ###
+#########################
+
+tenn <- outputs %>%
+  filter(State == "TN")
+
+table1 <- tenn %>%
+  #select(LT50, year, Species) %>%
+  tbl_summary(include = c(LT50, year, Species, julian_date),
+              by = Species,
+              missing= "no",
+              digits = all_continuous() ~1,
+              label = list(LT50 ~ "LT50 (°C)"),
+              statistic = list(all_continuous() ~ "{mean} ({sd})",
+                               all_categorical() ~ "{n}")) %>%
+  add_p(pvalue_fun = ~ style_pvalue(.x, digits = 3)) %>% #number of digits displayed for p-values
+  modify_caption("Table 1. LT50 (°C) values for three hardwood tree species") %>%
+  #modify_footnote(everything() ~ NA) %>%
+  modify_header(
+    update = list(
+      label ~ '',
+      stat_1 ~ '***Acer saccharum***', #is markdown **bold** formatting
+      stat_2 ~ '***Fagus grandifolia***',
+      stat_3 ~ '***Liriodendron tulipifera***',
+      p.value ~ '**P-value**')) %>%
+  as_gt() %>%
+  gt::tab_options(heading.align = "left")
+table1

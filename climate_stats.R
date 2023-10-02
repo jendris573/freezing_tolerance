@@ -1,6 +1,6 @@
 ### Statistical analysis for Clarksville Climate
 ### Written by Joe Endris
-### With input from Dr Evan Rehm
+### With input from Evan Rehm
 
 library(readxl)
 library(writexl)
@@ -32,36 +32,33 @@ tenn_clim <- mutate(tenn_clim, month=month(tenn_clim$DATE))
 tenn_clim$julian_date <- yday(tenn_clim$DATE)
 
 #omit NA in precipitation recordings 
-precip<-tenn_clim[complete.cases(tenn_clim[,6]),]
+tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
 #omit NA in TMAX recordings 
-TMAX<-tenn_clim[complete.cases(tenn_clim[,9]),]
+tenn_clim<-tenn_clim[complete.cases(tenn_clim[,9]),]
 #omit NA in TMIN recordings 
-TMIN<-tenn_clim[complete.cases(tenn_clim[,10]),]
+tenn_clim<-tenn_clim[complete.cases(tenn_clim[,10]),]
 
-phenology <- read_xlsx("data/phenology_check.xlsx")
-
-#create column for year
-phenology <- mutate(phenology, year=year(date))
-
-#create column for julian date
-phenology$julian_date <- yday(phenology$date)
+#filter for 1980-2022
+tenn1980 <- tenn_clim %>%
+  filter(year>1979) %>%
+  filter(year<2023)
 
 ###########################
 ### Climate data points ###
 ###########################
 
 #determine annual precipitation values
-precip <- precip %>%
+precip <- tenn1980 %>%
   group_by(year) %>%
   dplyr::summarise(annual_precip = sum(PRCP))
 
 #average annual TMAX
-TMAX <- TMAX %>%
+TMAX <- tenn1980 %>%
   group_by(year) %>%
   dplyr::summarise(annual_TMAX = mean(TMAX))
 
 #average annual TMIN
-TMIN <- TMIN %>%
+TMIN <- tenn1980 %>%
   group_by(year) %>%
   dplyr::summarise(annual_TMIN = mean(TMIN))
 
@@ -80,16 +77,15 @@ mean_TMIN <-   climate %>%
 mean_precip <-   climate %>%
   dplyr::summarise(mean_precip = mean(annual_precip))
 
-
+#filter for 1980-2022 (2023 has incomplete data)
 climate1980 <- climate %>%
   filter(year>1979) %>%
   filter(year<2023)
 
+#Plot for climate since 1980
 climate_plot <- ggplot() +
-  geom_point(data = climate1980, aes(x=year, y=TMAX, color = TMAX))+
   geom_point(data = climate1980, aes(x= year, y=TMIN, color = TMIN))+
-  #scale_color_manual(values = c("TMAX" = "red", "TMIN" = "blue"))+
-  labs(y=expression("Temperature (°C)"))+
+  labs(y=expression("Temperature (°C)"), x="Year")+
   xlab("Year")+
   theme_bw()+
   theme(panel.border = element_blank(), 
@@ -97,11 +93,10 @@ climate_plot <- ggplot() +
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
-        axis.title.x = element_blank(),
-        axis.text.x=element_blank(),
+        #axis.title.x = element_blank(),
+       # axis.text.x=element_blank(),
         legend.background = element_blank(),
-        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"))+
   ggtitle("Clarksville, TN climate since 1980")
   
 climate_plot
@@ -110,16 +105,11 @@ climate_plot
 ### Statistical Models ###
 ##########################
 
-#filter for 1980-2022
-tenn1980 <- tenn_clim %>%
-  filter(year>1979) %>%
-  filter(year<2023)
-
 #basic model to deterimine 
-clim_mod1 <- glm(TMIN ~ julian_date + year , data=tenn_clim)
+clim_mod1 <- glm(TMIN ~ julian_date + year , data=tenn1980)
 
 summary(clim_mod1)
-dredge(clim_mod1)
+
 
 ###########################
 ### Last freeze by year ###
@@ -163,30 +153,32 @@ last_freeze_2023
 ##############################################
 
 #determine number of spring days below -2
-TN_freeze <- tenn1980 %>%
+spring_1980 <- tenn_clim %>%
   group_by(year) %>%
   filter(month <6) %>%
+  filter(year>1979) %>%
   summarise(total_days=sum(TMIN < -2))
 
+mean(spring_1980$total_days)
+
 #plot Number of Days Below -2 since 1980
-TN_freeze_plot <- TN_freeze %>%
+TN_freeze_plot <- spring_1980 %>%
   ggplot(aes(x = year, y = total_days)) +
   geom_point(color="black") +
   geom_smooth(method="lm")+
-  labs(title = "Number of Days Below -2(C)",
-       subtitle = "Clarksville, TN",
-       y= "Number of Days",
+  labs(y= "Number of Days",
        x= "Year") + 
   theme_bw(base_size = 15)+
-  theme(panel.border = element_blank(),  
+  theme(panel.border = element_blank(), 
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))
+        axis.line = element_line(colour = "black"),
+        legend.background = element_blank())
 
 TN_freeze_plot
 
-mod_neg2 <- lm(total_days~year, data=TN_freeze)
+mod_neg2 <- glm(total_days~year, data=spring_1980)
 summary(mod_neg2)
 
 #######################################
@@ -208,6 +200,48 @@ TMIN_1980
 
 absolute_TMIN <- lm(temp~year, data=yearly_TMIN)
 summary(absolute_TMIN)
+
+###########################################################
+### Mean low temperatures for February, March and April ###
+###########################################################
+
+February_mean_tmin <- tenn1980 %>%
+  group_by(julian_date, year) %>%
+  filter(julian_date>31) %>%
+  filter(julian_date<60) %>%
+  dplyr::summarise(temp=mean(TMIN))
+
+february_model <- glm(temp ~ julian_date + year, data = February_mean_tmin, na.action="na.fail")
+summary(february_model)
+
+february_TMIN_plot <- ggplot(February_mean_tmin, aes(x= julian_date, y=temp, group=year, color = year))+
+  geom_line()
+
+february_TMIN_plot
+
+March_mean_tmin <- tenn1980 %>%
+  group_by(julian_date, year) %>%
+  filter(julian_date>59) %>%
+  filter(julian_date<91) %>%
+  summarise(temp=mean(TMIN))
+
+colnames(March_mean_tmin)[2] <- "new_col2"
+
+march_model <- glm(temp ~ julian_date + year, data = March_mean_tmin, na.action="na.fail")
+summary(march_model)
+
+April_mean_tmin <- tenn1980 %>%
+   group_by(julian_date, year) %>%
+  filter(julian_date>90) %>%
+  filter(julian_date<121) %>%
+  summarise(temp=mean(TMIN))
+
+april_model <- glm(temp ~ julian_date + year, data = April_mean_tmin, na.action="na.fail")
+summary(april_model)
+
+###########################################################################################
+                                #Unused code
+###########################################################################################
 
 #########################################
 ### Four panel temperature comparison ###
@@ -308,34 +342,6 @@ BR_plot <- ggplot(BR, aes(x=julian_date, y=tmean, color=year, group=year))+
 BR_plot
 
 
-#################################################
-### Mean low temperatuers for March and April ###
-#################################################
-
-March_mean_tmin <- tenn_clim %>%
-  filter(year>=1980) %>%
-  group_by(month, year) %>%
-  filter(julian_date>60) %>%
-  filter(julian_date<90) %>%
-  summarise(temp=mean(TMIN))
-
-mod3 <- lm(temp ~ year, data = March_mean_tmin)
-summary(mod3)
-
-April_mean_tmin <- tenn_clim %>%
-  filter(year>=1980) %>%
-  group_by(year) %>%
-  filter(julian_date>91) %>%
-  filter(julian_date<121) %>%
-  summarise(temp=mean(TMIN))
-
-mod4 <- lm(temp ~ year, data = April_mean_tmin)
-summary(mod4)
-
-
-
-
-
 ###############################################
 ### plot monthly mean low temps for Jan-May ###
 ###############################################
@@ -365,3 +371,12 @@ TN_monthly_mean_plot <- ggplot(TN_month_mean, aes(x= month, y=mean_low))+
 
 TN_monthly_mean_plot
 
+
+
+### 2010 looks funky
+
+clim2010 <- tenn_clim %>%
+  filter(year==2010)
+
+clim2010 <- clim2010 %>%
+  summarise(average= mean(TMIN))

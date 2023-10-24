@@ -113,6 +113,7 @@ summary(clim_mod1)
 
 ###########################
 ### Last freeze by year ###
+#Include this in the paper#
 ###########################
 
 #calculate last day below freezing for each year

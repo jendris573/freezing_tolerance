@@ -11,6 +11,7 @@ library(dplyr)
 library(pracma)
 library(multcomp)
 library(ggplot2)
+library(gridExtra)
 
 ########################
 ### Data Preparation ###
@@ -215,8 +216,13 @@ February_mean_tmin <- tenn1980 %>%
 february_model <- glm(temp ~ julian_date + year, data = February_mean_tmin, na.action="na.fail")
 summary(february_model)
 
-february_TMIN_plot <- ggplot(February_mean_tmin, aes(x= julian_date, y=temp, group=year, color = year))+
-  geom_line()
+february_TMIN_plot <- ggplot(February_mean_tmin, aes(x= year, y=temp))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  theme_bw()+
+  xlab('Year')+
+  ylab('Daily minimum temperature')+
+  annotate(geom="text",x=1981,y=17,label="February",size=5)
 
 february_TMIN_plot
 
@@ -226,10 +232,20 @@ March_mean_tmin <- tenn1980 %>%
   filter(julian_date<91) %>%
   summarise(temp=mean(TMIN))
 
-colnames(March_mean_tmin)[2] <- "new_col2"
+#colnames(March_mean_tmin)[2] <- "new_col2"
 
 march_model <- glm(temp ~ julian_date + year, data = March_mean_tmin, na.action="na.fail")
 summary(march_model)
+
+march_TMIN_plot <- ggplot(March_mean_tmin, aes(x= year, y=temp))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  theme_bw()+
+  xlab('Year')+
+  ylab('Daily minimum temperature')+
+  annotate(geom="text",x=1981,y=19,label="March",size=5)
+
+march_TMIN_plot
 
 April_mean_tmin <- tenn1980 %>%
    group_by(julian_date, year) %>%
@@ -240,6 +256,16 @@ April_mean_tmin <- tenn1980 %>%
 april_model <- glm(temp ~ julian_date + year, data = April_mean_tmin, na.action="na.fail")
 summary(april_model)
 
+april_TMIN_plot <- ggplot(April_mean_tmin, aes(x= year, y=temp))+
+  geom_point()+
+  geom_smooth(method='lm')+
+  theme_bw()+
+  xlab('Year')+
+  ylab('Daily minimum temperature')+
+  annotate(geom="text",x=1981,y=21,label="April",size=5)
+april_TMIN_plot
+
+grid.arrange(february_TMIN_plot,march_TMIN_plot,april_TMIN_plot,ncol=2)
 ###########################################################################################
                                 #Unused code
 ###########################################################################################

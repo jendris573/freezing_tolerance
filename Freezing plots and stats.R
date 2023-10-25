@@ -305,3 +305,13 @@ table1 <- tenn %>%
   as_gt() %>%
   gt::tab_options(heading.align = "left")
 table1
+
+
+
+
+
+
+
+
+
+

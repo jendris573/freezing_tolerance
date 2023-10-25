@@ -102,68 +102,51 @@ climate_plot <- ggplot() +
   
 climate_plot
 
-##########################
-### Statistical Models ###
-##########################
-
-#basic model to deterimine 
-clim_mod1 <- glm(TMIN ~ julian_date + year , data=tenn1980)
-
-summary(clim_mod1)
-
-
 ###########################
-### Last freeze by year ###
+### TMIN by Julian date ###
 ###########################
 
-#calculate last day below freezing for each year
-last_freeze <- tenn_clim%>%
+#model to evalutate changes in TMIN by Julian date every years since 1980
+TMIN_model <- glm(TMIN ~ julian_date * year , data=tenn1980)
+
+summary(TMIN_model)
+
+
+###################
+### Last freeze ###
+###################
+
+#calculate last day below -2 for each year since 1980
+last_freeze <- tenn1980%>%
   filter(TMIN< -2)%>%
-  filter(year(DATE)>1979)%>%
   filter(julian_date<180)%>%
-  group_by(year(DATE))%>%
+  group_by(year)%>%
   filter(row_number()==n())
 
 #calculate mean last freeze for TN since 1980
 mean(as.numeric(last_freeze$julian_date))
 
-#statisical model for changes in last freeze date
+#statistical model for changes in last freeze date
 last_freeze_mod <- lm(julian_date~year, data=last_freeze)
 summary(last_freeze_mod)
 
-#calculate last day below freezing for 2022
-last_freeze_2022 <- tenn_clim%>%
-  filter(TMIN< -2)%>%
-  filter(year(DATE)==2022)%>%
-  filter(julian_date<180)%>%
-  group_by(year(DATE))%>%
-  filter(row_number()==n())
-last_freeze_2022
 
-#calculate last day below freezing for 2023
-last_freeze_2023 <- tenn_clim%>%
-  filter(TMIN< -2)%>%
-  filter(year(DATE)==2023)%>%
-  filter(julian_date<180)%>%
-  group_by(year(DATE))%>%
-  filter(row_number()==n())
-last_freeze_2023
 
 ##############################################
 ### The number of days below -2 since 1980 ###
 ##############################################
 
 #determine number of spring days below -2
-spring_1980 <- tenn_clim %>%
+neg_2_days <- tenn_clim %>%
   group_by(year) %>%
   filter(month <6) %>%
   filter(year>1979) %>%
   summarise(total_days=sum(TMIN < -2))
 
-mean(spring_1980$total_days)
+mean(neg_2_days$total_days)
 
 #plot Number of Days Below -2 since 1980
-TN_freeze_plot <- spring_1980 %>%
+TN_freeze_plot <- neg_2_days %>%
   ggplot(aes(x = year, y = total_days)) +
   geom_point(color="black") +
   geom_smooth(method="lm")+
@@ -179,7 +162,7 @@ TN_freeze_plot <- spring_1980 %>%
 
 TN_freeze_plot
 
-mod_neg2 <- glm(total_days~year, data=spring_1980)
+mod_neg2 <- glm(total_days~year, data=neg_2_days)
 summary(mod_neg2)
 
 #######################################

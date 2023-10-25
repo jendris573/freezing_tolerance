@@ -214,8 +214,9 @@ February_mean_tmin <- tenn1980 %>%
 february_model <- glm(temp ~ julian_date + year, data = February_mean_tmin, na.action="na.fail")
 summary(february_model)
 
-february_TMIN_plot <- ggplot(February_mean_tmin, aes(x= julian_date, y=temp, group=year, color = year))+
-  geom_line()
+february_TMIN_plot <- ggplot(February_mean_tmin, aes(x= year, y=temp))+
+  geom_point()+
+  geom_smooth(method='lm')
 
 february_TMIN_plot
 

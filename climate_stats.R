@@ -383,10 +383,8 @@ TN_monthly_mean_plot
 
 
 
-### 2010 looks funky
+day70 <- tenn_clim %>%
+  filter(julian_date==70)
 
-clim2010 <- tenn_clim %>%
-  filter(year==2010)
-
-clim2010 <- clim2010 %>%
-  summarise(average= mean(TMIN))
+day95 <- tenn_clim %>%
+  filter(julian_date==95)

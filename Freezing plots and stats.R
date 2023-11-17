@@ -42,7 +42,7 @@ outputs <- mutate(outputs, year=year(outputs$Date))
 TN<-read.csv("data/Tennessee_climate.csv")
 
 #keep only sewage plant
-TN <- TN%>%filter(STATION=="USC00401795")
+TN <- TN%>%filter(STATION=="USC00401790")
 
 #omit NA in temperature recordings 
 TN<-TN[complete.cases(TN[,10]),]
@@ -182,10 +182,11 @@ maple_phenology<-ggplot(data=subset(phenology, species=="Acer saccharum"), aes(x
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
+        text=element_text(size=14),
         legend.background = element_blank(),
         legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.08","0.7"))+
-  annotate("text", x=40,y=4.5,label= expression(italic("Acer saccharum")), hjust=0)
+        legend.position=c("0.08","0.65"))+
+  annotate("text", x=40,y=4.5,label= expression(italic("Acer saccharum")), hjust=0, size=5)
 
 maple_phenology
 
@@ -204,7 +205,7 @@ beech_phenology<-ggplot(data=subset(phenology, species=="Fagus grandifolia"), ae
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
         text=element_text(size=14))+
-  annotate("text", x=40,y=4,label= expression(italic("Fagus grandifolia")), hjust=0, size=8)
+  annotate("text", x=40,y=4,label= expression(italic("Fagus grandifolia")), hjust=0, size=5)
 
 beech_phenology
 
@@ -221,8 +222,9 @@ poplar_phenology<-ggplot(data=subset(phenology, species=="Liriodendron tulipifer
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
         panel.background = element_blank(),
-        axis.line = element_line(colour = "black"))+
-  annotate("text", x=40,y=4.5,label= expression(italic("Liriodendron tulipifera")), hjust=0)
+        axis.line = element_line(colour = "black"),
+        text=element_text(size=14))+
+  annotate("text", x=40,y=4.5,label= expression(italic("Liriodendron tulipifera")), hjust=0, size=5)
 
 poplar_phenology
 

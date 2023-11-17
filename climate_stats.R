@@ -386,5 +386,8 @@ TN_monthly_mean_plot
 day70 <- tenn_clim %>%
   filter(julian_date==70)
 
-day95 <- tenn_clim %>%
-  filter(julian_date==95)
+day83 <- tenn_clim %>%
+  filter(julian_date==83)
+
+avg_tmin <- day83 %>%
+  dplyr::summarise(annual_TMIN = mean(TMIN))

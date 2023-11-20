@@ -33,7 +33,7 @@ tenn_clim <- mutate(tenn_clim, month=month(tenn_clim$DATE))
 tenn_clim$julian_date <- yday(tenn_clim$DATE)
 
 #omit NA in precipitation recordings 
-tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
+#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
 #omit NA in TMAX recordings 
 tenn_clim<-tenn_clim[complete.cases(tenn_clim[,9]),]
 #omit NA in TMIN recordings 
@@ -284,9 +284,12 @@ UL_panel
 
 UR_panel <- ggplot(last_freeze, aes(x=year, y=julian_date))+
   geom_point()+
+  geom_hline(yintercept = 83.26, color= "orange", size=1.25)+ #average last freeze date
+  geom_hline(yintercept = 105, color= "red", size=1.25)+ #average last freeze date
   geom_smooth(method="lm")+
-  labs(title = "Last Freeze by Julian Date",
-       y= "Julian Date",
+  scale_y_continuous(limits = c(40, 125),
+                     breaks=seq(40, 125,by=10))+
+  labs(y= "Julian Date",
        x= "Year") + 
   theme_bw(base_size = 15)+
   theme(panel.border = element_blank(),  
@@ -391,3 +394,155 @@ day83 <- tenn_clim %>%
 
 avg_tmin <- day83 %>%
   dplyr::summarise(annual_TMIN = mean(TMIN))
+
+
+## Study years plot
+
+temps2022 <- tenn_clim %>%
+  filter(year == 2022)
+
+temps2022$year <- as.factor(temps2022$year)
+
+#omit NA in TMAX recordings 
+temps2022_tmax<-temps2022[complete.cases(temps2022[,9]),]
+#omit NA in TMIN recordings 
+temps2022_tmin<-temps2022[complete.cases(temps2022[,10]),]
+
+temps2023 <- tenn_clim %>%
+  filter(year == 2023)
+
+#omit NA in TMAX recordings 
+temps2023_tmax<-temps2023[complete.cases(temps2023[,9]),]
+#omit NA in TMIN recordings 
+temps2023_tmin<-temps2023[complete.cases(temps2023[,10]),]
+
+#TMAX/TMIN as panels
+study_TMAX_plot <-ggplot() +
+  geom_line(data=temps2022_tmax, aes(x=julian_date, y=TMAX), linetype='solid', color='red')+
+  geom_line(data=temps2023_tmax, aes(x=julian_date, y=TMAX), linetype='dashed', color='red')+
+  geom_vline(xintercept = 46, color= "black")+ #start of leaf out window
+  geom_vline(xintercept = 125, color= "black")+ #end of leaf out window  
+  labs(y=expression("Temperature (°C)"))+
+  xlab("Julian Date")+
+  scale_x_continuous(limits = c(0, 150),
+                   breaks=seq(0, 150,by=10))+
+                   #minor_breaks = seq(,, 1))+
+  theme_bw()+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_text(angle = 45, hjust = 1),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+  ggtitle("Daily High Temperatures")
+
+study_TMAX_plot
+
+study_TMIN_plot <-ggplot() +
+  geom_line(data=temps2023_tmin, aes(x=julian_date, y=TMIN), linetype='dashed', color='blue')+
+  geom_line(data=temps2022_tmin, aes(x=julian_date, y=TMIN), linetype='solid', color='blue')+
+  geom_vline(xintercept = 46, color= "black")+ #start of leaf out window
+  geom_vline(xintercept = 125, color= "black")+ #end of leaf out window  
+  labs(y=expression("Temperature (°C)"))+
+  xlab("Julian Date")+
+  scale_x_continuous(limits = c(0, 150),
+                     breaks=seq(0, 150,by=10))+
+  theme_bw()+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_text(angle = 45, hjust = 1),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+  ggtitle("2023")
+
+study_TMIN_plot
+
+grid.arrange(study_TMAX_plot, study_TMIN_plot, ncol=1)
+
+
+#years as panels
+study_TMAX_plot <-ggplot() +
+  geom_line(data=temps2022_tmax, aes(x=julian_date, y=TMAX), linetype='solid', color='red')+
+  geom_line(data=temps2022_tmin, aes(x=julian_date, y=TMIN), linetype='solid', color='blue')+
+  geom_vline(xintercept = 46, color= "black")+ #start of leaf out window
+  geom_vline(xintercept = 125, color= "black")+ #end of leaf out window  
+  labs(y=expression("Temperature (°C)"))+
+  xlab("Julian Date")+
+  scale_x_continuous(limits = c(0, 150),
+                     breaks=seq(0, 150,by=10))+
+  #minor_breaks = seq(,, 1))+
+  theme_bw()+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_text(angle = 45, hjust = 1),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+  ggtitle("2022")
+
+study_TMAX_plot
+
+study_TMIN_plot <-ggplot() +
+  geom_line(data=temps2023_tmax, aes(x=julian_date, y=TMAX), linetype='solid', color='red')+
+  geom_line(data=temps2023_tmin, aes(x=julian_date, y=TMIN), linetype='solid', color='blue')+
+  geom_vline(xintercept = 46, color= "black")+ #start of leaf out window
+  geom_vline(xintercept = 125, color= "black")+ #end of leaf out window  
+  labs(y=expression("Temperature (°C)"))+
+  xlab("Julian Date")+
+  scale_x_continuous(limits = c(0, 150),
+                     breaks=seq(0, 150,by=10))+
+  theme_bw()+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_text(angle = 45, hjust = 1),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+  ggtitle("2023")
+
+study_TMIN_plot
+
+grid.arrange(study_TMAX_plot, study_TMIN_plot, ncol=1)
+
+
+study_tmean <- tenn_clim %>%
+  filter(year > 2021) %>%
+  group_by(julian_date) %>%
+  mutate(tmean=(TMIN+TMAX)/2)
+
+study_tmean$year <- as.factor(study_tmean$year)
+
+tmean_plot <-ggplot() +
+  geom_line(data=subset(study_tmean, year=="2022",  aes(x=julian_date, y=tmean), linetype='solid', color='blue'))+
+  geom_line(data=subset(study_tmean, year=="2023",  aes(x=julian_date, y=tmean), linetype='dashed', color='red'))+
+  geom_vline(xintercept = 46, color= "black")+ #start of leaf out window
+  geom_vline(xintercept = 125, color= "black")+ #end of leaf out window  
+  labs(y=expression("Mean Temperature (°C)"))+
+  xlab("Julian Date")+
+  scale_x_continuous(limits = c(0, 150),
+                     breaks=seq(0, 150,by=10))+
+  theme_bw()+
+  theme(panel.border = element_blank(), 
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(colour = "black"),
+        axis.text.x=element_text(angle = 45, hjust = 1),
+        legend.background = element_blank(),
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
+        legend.position=c("0.1","0.9"), legend.box = "vertical")
+
+tmean_plot

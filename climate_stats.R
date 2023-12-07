@@ -35,7 +35,7 @@ tenn_clim$julian_date <- yday(tenn_clim$DATE)
 #omit NA in precipitation recordings 
 #tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
 #omit NA in TMAX recordings 
-tenn_clim<-tenn_clim[complete.cases(tenn_clim[,9]),]
+#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,9]),]
 #omit NA in TMIN recordings 
 tenn_clim<-tenn_clim[complete.cases(tenn_clim[,10]),]
 

@@ -122,8 +122,8 @@ plot22 <-ggplot() +
         axis.title.x = element_blank(),
         axis.text.x=element_blank(),
         legend.background = element_blank(),
-        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.1","0.9"), legend.box = "vertical")+
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"))+
+        #legend.position=c("0.1","0.85"), legend.box = "vertical")+
   ggtitle(2022)
 plot22
 
@@ -145,12 +145,13 @@ plot23 <-ggplot() +
         panel.background = element_blank(),
         axis.line = element_line(colour = "black"),
         legend.background = element_blank(),
-        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"),
-        legend.position=c("0.1","0.9"))+
+        legend.box.background = element_blank(),legend.spacing.y = unit(0, "cm"))+
+        #legend.position=c("0.1","0.9"))+
   ggtitle(2023)
 plot23
 
-grid.arrange(plot22, plot23,nrow=2)
+LT50_plot <- grid.arrange(plot22, plot23,nrow=2)
+
 
 ############################################################
 ### Plot to show phenology of three core species by year ###

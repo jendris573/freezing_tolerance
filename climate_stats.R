@@ -162,7 +162,7 @@ TN_freeze_plot <- neg_2_days %>%
 
 TN_freeze_plot
 
-mod_neg2 <- glm(total_days~year, data=neg_2_days)
+mod_neg2 <- lm(total_days~year, data=neg_2_days)
 summary(mod_neg2)
 
 #######################################

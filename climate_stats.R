@@ -2,6 +2,10 @@
 ### Written by Joe Endris
 ### With input from Evan Rehm
 
+# # # # # # # # #
+## Libraries ----
+# # # # # # # # #
+
 library(readxl)
 library(writexl)
 library(fitdistrplus)
@@ -13,15 +17,15 @@ library(multcomp)
 library(ggplot2)
 library(gridExtra)
 
-########################
-### Data Preparation ###
-########################
+# # # # # # # # # # # # #
+## Data Preparation ----
+# # # # # # # # # # # # #
 
 #Load NOAA Climate Data Online data
-tenn_clim<-read.csv("data/Tennessee_climate.csv")
+tenn_clim<-read_excel("data/tenn1980.xlsx")
 
 #keep only sewage plant
-tenn_clim <- tenn_clim%>%filter(STATION=="USC00401790")
+#tenn_clim <- tenn_clim%>%filter(STATION=="USC00401790")
 
 #create column for year
 tenn_clim <- mutate(tenn_clim, year=year(tenn_clim$DATE))
@@ -33,16 +37,16 @@ tenn_clim <- mutate(tenn_clim, month=month(tenn_clim$DATE))
 tenn_clim$julian_date <- yday(tenn_clim$DATE)
 
 #omit NA in precipitation recordings 
-#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
+tenn_clim<-tenn_clim[complete.cases(tenn_clim[,4]),]
 #omit NA in TMAX recordings 
-#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,9]),]
+#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,5]),]
 #omit NA in TMIN recordings 
-tenn_clim<-tenn_clim[complete.cases(tenn_clim[,10]),]
+tenn_clim<-tenn_clim[complete.cases(tenn_clim[,6]),]
 
 #filter for 1980-2022
 tenn1980 <- tenn_clim %>%
   filter(year>1979) %>%
-  filter(year<2023)
+  filter(year<2024)
 
 ###########################
 ### Climate data points ###

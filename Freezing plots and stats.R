@@ -17,14 +17,9 @@ library(fitdistrplus)
 library(pracma)
 library(gtsummary)
 
-
-#edit the below code when its time to save actual figures
-##ggsave(filename, plot = last_plot(),device = png(),path = NULL, scale = 1, +
-#width = NA, height = NA, units = c("in"), dpi = 300, limitsize = TRUE, bg = NULL)
-
-########################
-### data preparation ###
-########################
+# # # # # # # # # # # # #
+### data preparation ----
+# # # # # # # # # # # # #
 
 #read in raw data for LT50 values
 outputs<-read_excel("data/LT50 master.xlsx")
@@ -38,14 +33,11 @@ outputs <- mutate(outputs, month=month(outputs$Date))
 #create column for year
 outputs <- mutate(outputs, year=year(outputs$Date))
 
-#read in NOAA Climate Data data
-TN<-read.csv("data/Tennessee_climate.csv")
-
-#keep only sewage plant
-TN <- TN%>%filter(STATION=="USC00401790")
+#read in NOAA Climate Data data (1980-2023)
+TN<-read_excel("data/tenn1980.xlsx")
 
 #omit NA in temperature recordings 
-TN<-TN[complete.cases(TN[,10]),]
+TN<-TN[complete.cases(TN[,6]),]
 
 #create column for year
 TN <- mutate(TN, year=year(TN$DATE))
@@ -71,9 +63,10 @@ phenology <- filter(phenology, year > "2021")
 #omit any blank spots in the mean_phenology column
 phenology <- phenology[complete.cases(phenology[,4]),]
 
-##################################################################################
-###plot with historic coldest temp by julian date and coldest day of study year###
-##################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+## plot with historic coldest temp by julian date and coldest day of study year ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 dbl_panel <- filter(outputs, State == "TN")
 
 dbl_panel <- dbl_panel%>%
@@ -153,9 +146,9 @@ plot23
 LT50_plot <- grid.arrange(plot22, plot23,nrow=2)
 
 
-############################################################
-### Plot to show phenology of three core species by year ###
-############################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+### Plot to show phenology of three core species by year ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 #calculate mean phenology by julian date
 phenology <- phenology%>%
@@ -232,9 +225,10 @@ poplar_phenology
 grid.arrange(maple_phenology, beech_phenology, poplar_phenology, nrow=3)
 
 
-#######################################
-### Does LT50 vary with phenology status ###
-#######################################
+# # # # # # # # # # # # # # # # # # # # # # #
+### Does LT50 vary with phenology status ---
+# # # # # # # # # # # # # # # # # # # # # # # 
+
 outputs$phen<-as.factor(outputs$phen)
 outputs$year<-as.factor(outputs$year)
 outputs$Species<-as.factor(outputs$Species)
@@ -264,9 +258,13 @@ summary(mods)
 #comparing specific factor levels
 summary(glht(mods, mcp(phen="Tukey")))
 summary(glht(mods,mcp(Species="Tukey")))
-#######################################
-### Statistical analyses start here ###
-#######################################
+
+# # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # #
+# Statistical analyses start here ----
+# # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # #
+
 
 #species as a factor
 outputs$Species <- as.factor(outputs$Species)
@@ -281,9 +279,9 @@ phenology <- filter(phenology, species != "Quercus alba")
 #species as a factor for phenology data
 phenology$species <- as.factor(phenology$species)
 
-#################################
-### LT50 statistical analysis ###
-#################################
+# # # # # # # # # # # # # # # # # #
+### LT50 statistical analysis ----
+# # # # # # # # # # # # # # # # # #
 
 #global model
 LT50_model<-glm(LT50~(Species+julian_date+year)^2,data=outputs, na.action="na.fail")
@@ -296,9 +294,9 @@ summary(LT50_final_model)
 
 summary(glht(LT50_final_model, mcp(Species= "Tukey")))
 
-######################################
-### Phenology statistical analysis ###
-######################################
+# # # # # # # # # # # # # # # # # # # #
+### Phenology statistical analysis ----
+# # # # # # # # # # # # # # # # # # # #
 
 #global model
 phenology_model <- glm(phenology ~ species * date * year, data=phenology, family = poisson, na.action="na.fail")
@@ -311,9 +309,9 @@ summary(pheno_mod)
 
 #summary(glht(phenology, mcp(species= "Tukey")))#not relevant since Species isn't used as a predictor
 
-#########################
-### Gtsummmary tables ###
-#########################
+# # # # # # # # # # # # #
+## Gtsummmary tables ----
+# # # # # # # # # # # # #
 
 tenn <- outputs %>%
   filter(State == "TN")

@@ -41,3 +41,13 @@ summary(mods)
 #comparing specific factor levels
 summary(glht(mods, mcp(phen="Tukey")))
 summary(glht(mods,mcp(Species="Tukey")))
+
+#look at just pheno levels 2 and 3
+
+#Phenology level 2
+mods<-glm(LT50~Species+year,data=outputs%>%filter(phen==2))
+summary(mods)
+
+#Phenology level 3
+mods<-glm(LT50~Species+year,data=outputs%>%filter(phen==3))
+summary(mods)

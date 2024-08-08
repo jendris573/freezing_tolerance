@@ -1,6 +1,8 @@
 ### Specific code for analyzing and extracting phenology values
 #Code developed in response to reviewers from Scientific Reports
 #Created 8/1/24 by Evan Rehm
+#one issue is that phenology surveys in 2023 were every 7 days and every 14 in 2022
+#estimate phenology stages for 2023 using true data and subsampled data for every 2 weeks
 
 library(dplyr)
 library(tidyr)
@@ -36,7 +38,7 @@ phenology <- phenology[complete.cases(phenology[,4]),]
 
 ggplot(data=phenology,aes(x=julian_date,y=phenology))+
          geom_point()+
-         facet_wrap(~species)
+         facet_wrap(~species+year)
 
 #match phenology with GDD
 clim<-read_excel("data/climate_GDD.xlsx")
@@ -61,6 +63,10 @@ phenology$id<-paste(phenology$species,phenology$year,phenology$number,sep='_')
 phenology<-phenology[
   order( phenology[,10], phenology[,9] ),
 ]
+#Taking just subset of data for 2023
+#need to use just certain days
+phenology<-filter(phenology,julian_date%in%c(41,46,60,74,97,109,123,55,69,83,101,110))
+
 #empty dataframe to write prediction values to
 out<-data.frame(matrix(ncol = 5, nrow = 0))
 colnames(out) <- c("id", "ph1", "ph2","ph3","ph4")
@@ -73,7 +79,7 @@ for(i in 1:length(unique(phenology$id))){
 fit <- nls(phenology ~ SSlogis(GDDcumsum, Asym, xmid, scal), data = temp,
            control=nls.control(maxiter=500,warnOnly=TRUE,tol=10))#fit model
 #summary(fit)
-newdata = data.frame(GDDcumsum = seq(35, 600, length.out = 1000))#new data for which to fit
+newdata = data.frame(GDDcumsum = seq(110, 600, length.out = 1000))#new data for which to fit
 
 newdata$prediction<-predict(fit, newdata )
 out[i,1]=temp$id[1]
@@ -112,7 +118,7 @@ for(i in 1:length(unique(phenology$id))){
   fit <- nls(phenology ~ SSlogis(julian_date, Asym, xmid, scal), data = temp,
              control=nls.control(maxiter=500,warnOnly=TRUE,tol=10))#fit model
   #summary(fit)
-  newdata = data.frame(julian_date = seq(1, 150, length.out = 150))#new data for which to fit
+  newdata = data.frame(julian_date = seq(1, 125, length.out = 125))#new data for which to fit
   
   newdata$prediction<-predict(fit, newdata )
   out2[i,1]=temp$id[1]

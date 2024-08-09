@@ -37,3 +37,19 @@ temp<-tenn1980%>%
 
 #import LT50 values
 LT50<-read_excel("data/LT50 master.xlsx")
+
+#adds the minimum temp for that specific year
+test<-left_join(LT50,temp[,c(12,14,15)],by=c("year","julian_date"),relationship = "many-to-many")
+colnames(test)[14]<-"current_year_min"      
+
+#get long-term average minimum temp
+tempmeanMIN<-temp%>%
+  filter(year<2022)%>%
+  group_by(julian_date)%>%
+  summarize(meanMIN=mean(TMIN,na.rm=TRUE),
+            minMIN=min(TMIN,na.rm=TRUE))
+
+#attach that longterm min to LT50
+test<-left_join(test,tempmeanMIN,by=c("julian_date"))
+
+#calculate safety margin from both the current year and long-term min temp

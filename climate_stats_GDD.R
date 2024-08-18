@@ -1,6 +1,6 @@
 #climate stats and GDD comparison
 ### simplified look at comparing GDD with climate stats
-#climate data from PRISM
+#climate data from NOAA
 
 library(readxl)
 library(writexl)
@@ -26,7 +26,7 @@ tenn_clim<-read_excel("data/climate_GDD.xlsx")
 
 #calculate last day below -2 for each year since 1980
 last_freeze <- tenn_clim%>%
-  filter(TMIN< -2)%>%
+  filter(TMIN< 0)%>%
   filter(julian_date<180)%>%
   group_by(year)%>%
   filter(row_number()==n())
@@ -40,7 +40,7 @@ ggplot(data=last_freeze,aes(x=year,y=GDDcumsum))+
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         legend.position = c(0.2, 0.8),legend.key=element_blank(),
         text = element_text(size = 12))
-#ggsave("figures/GDD_freeze_year.png",units="cm",width=13,height=10)
+ggsave("figures/GDD_freeze_year.png",units="cm",width=20,height=13)
 mod<-lm(GDDcumsum~year,data=last_freeze)
 summary(mod)
 #calculate mean last freeze for TN since 1980

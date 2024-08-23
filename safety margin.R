@@ -4,6 +4,7 @@
 library(ggplot2)
 library(readxl)
 library(tidyverse)
+library(multcomp)
 library(caTools)#moving window calculation
 
 tenn_clim<-read.csv("data/Tennessee_climate.csv")
@@ -53,3 +54,38 @@ tempmeanMIN<-temp%>%
 test<-left_join(test,tempmeanMIN,by=c("julian_date"))
 
 #calculate safety margin from both the current year and long-term min temp
+#current year
+test$smcurrent<-test$LT50-test$current_year_min
+#long term
+test$smlong<-test$LT50-test$minMIN
+
+#positive numbers represent freezing risk
+max(test$smcurrent)
+max(test$smlong)
+
+#plot sm margin for each species
+test$Species<-as.factor(test$Species)
+ggplot(test,aes(x=julian_date))+
+  geom_line(aes(y=smcurrent,group=Individual,color=Individual))+
+  facet_wrap(~year+Species)+
+  ylab('Thermal safety margin for current year')+
+  xlab("Day of year")+geom_hline(yintercept=0,linetype="dashed")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        legend.key=element_blank(),
+        text = element_text(size = 14))
+
+ggplot(test,aes(x=julian_date))+
+  geom_line(aes(y=smlong,group=Individual,color=Individual))+
+  facet_wrap(~year+Species)+
+  ylab('Thermal safety margin for long-term average')+
+  xlab("Day of year")+geom_hline(yintercept=0,linetype="dashed")+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.background = element_blank(), axis.line = element_line(colour = "black"),
+        legend.key=element_blank(),
+        text = element_text(size = 14))
+
+
+mod<-glm(smcurrent~julian_date+year+Species,data=test)
+summary(mod)
+summary(glht(mod, mcp(Species="Tukey")))

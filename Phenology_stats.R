@@ -37,7 +37,7 @@ summary(glht(mod_GDDph2, mcp(species="Tukey")))
 mod<-glm(ph2~year*species,data=DOY,na.action="na.fail")
 summary(mod)
 dredge(mod)
-mod_DOYph2<-glm(ph2~year*species,data=DOY)
+mod_DOYph2<-glm(ph2~year+species,data=DOY)
 summary(mod_DOYph2)
 summary(glht(mod_DOYph2, mcp(species="Tukey")))
 

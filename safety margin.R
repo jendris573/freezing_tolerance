@@ -5,6 +5,7 @@ library(ggplot2)
 library(readxl)
 library(tidyverse)
 library(multcomp)
+library(MuMIn)
 library(caTools)#moving window calculation
 
 tenn_clim<-read.csv("data/Tennessee_climate.csv")
@@ -55,37 +56,72 @@ test<-left_join(test,tempmeanMIN,by=c("julian_date"))
 
 #calculate safety margin from both the current year and long-term min temp
 #current year
-test$smcurrent<-test$LT50-test$current_year_min
+test$smcurrent<-test$current_year_min-test$LT50
 #long term
-test$smlong<-test$LT50-test$minMIN
+test$smlong<-test$minMIN-test$LT50
 
 #positive numbers represent freezing risk
-max(test$smcurrent)
-max(test$smlong)
+min(test$smcurrent)
+min(test$smlong)
 
+#creating dataframe of text to be added back into 
+ann_text<-data.frame(julian_date=80,smcurrent=30,year=c(2022,2022,2022,2023,2023,2023),Species=c("Acer saccharum","Fagus grandifolia","Liriodendron tulipifera",
+                                                                     "Acer saccharum","Fagus grandifolia","Liriodendron tulipifera"),
+                     label=c("Acer saccharum","Fagus grandifolia","Liriodendron tulipifera","","",""))
+                     
 #plot sm margin for each species
 test$Species<-as.factor(test$Species)
 ggplot(test,aes(x=julian_date))+
-  geom_line(aes(y=smcurrent,group=Individual,color=Individual))+
-  facet_wrap(~year+Species)+
+  geom_line(aes(y=smcurrent,group=Individual))+
+  facet_wrap(~year+Species,scales="free")+
+ # scale_color_manual(values=c("black","black","black","grey70","grey70","grey70"),guide="none")+
+ # scale_linetype_manual(values=c("solid","dashed","dotdash","solid","dashed","dotdash"),guide="none")+
   ylab('Thermal safety margin for current year')+
-  xlab("Day of year")+geom_hline(yintercept=0,linetype="dashed")+
+  xlab("Julian Date")+geom_hline(yintercept=0,linetype="dashed")+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         legend.key=element_blank(),
-        text = element_text(size = 14))
+        text = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_blank())+
+  scale_y_continuous(limits=c(-10,30))+
+  scale_x_continuous(limits=c(40,120))+
+  geom_text(data=ann_text,
+            aes(x=julian_date,y=smcurrent,label=label))
+ggsave("figures/TSM_currentyear.png",units="cm",width=18,height=15)
 
 ggplot(test,aes(x=julian_date))+
-  geom_line(aes(y=smlong,group=Individual,color=Individual))+
-  facet_wrap(~year+Species)+
-  ylab('Thermal safety margin for long-term average')+
-  xlab("Day of year")+geom_hline(yintercept=0,linetype="dashed")+
+  geom_line(aes(y=smlong,group=Individual))+
+  facet_wrap(~year+Species,scales="free")+
+  # scale_color_manual(values=c("black","black","black","grey70","grey70","grey70"),guide="none")+
+  # scale_linetype_manual(values=c("solid","dashed","dotdash","solid","dashed","dotdash"),guide="none")+
+  ylab('Thermal safety margin since 1980')+
+  xlab("Julian Date")+geom_hline(yintercept=0,linetype="dashed")+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),
         legend.key=element_blank(),
-        text = element_text(size = 14))
+        text = element_text(size = 14),
+        strip.background = element_blank(),
+        strip.text.x = element_blank())+
+  scale_y_continuous(limits=c(-10,30))+
+  scale_x_continuous(limits=c(40,120))+
+  geom_text(data=ann_text,
+            aes(x=julian_date,y=smcurrent,label=label))
 
+#ggsave("figures/TSM_longterm.png",units="cm",width=18,height=15)
 
-mod<-glm(smcurrent~julian_date+year+Species,data=test)
+#stat testing for the current year safety maring
+mod<-glm(smcurrent~julian_date+year+Species,data=test,na.action="na.fail")
+summary(mod)
+dredge(mod)
+mod<-glm(smcurrent~julian_date+year+Species,data=test,na.action="na.fail")
 summary(mod)
 summary(glht(mod, mcp(Species="Tukey")))
+#testing for long-term margin
+mod<-glm(smlong~julian_date+year+Species,data=test,na.action="na.fail")
+summary(mod)
+dredge(mod)
+mod<-glm(smlong~julian_date+year+Species,data=test,na.action="na.fail")
+summary(mod)
+summary(glht(mod, mcp(Species="Tukey")))
+

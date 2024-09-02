@@ -46,8 +46,8 @@ ggplot()+
   geom_line(data=outputs,aes(x=julian_date,y=GDDcumsum,colour=year,group=year,linetype=year,linewidth=year))+
   xlab("Julian Date")+
   ylab("Accumulated growing degree days")+
-  scale_color_manual(values=c('black','black','black','grey90'))+
-  scale_linetype_manual(values=c("dotted", "longdash",'solid','solid'),labels=c('2022','2023','Mean (SD) 1980-2021'))+
+  scale_color_manual(values=c('black','black','black','grey80'))+
+  scale_linetype_manual(values=c("dotted", "longdash",'solid','solid'),labels=c('2022','2023','Mean 1980-2021'))+
   scale_linewidth_manual(values=c(1.5,1,1,1))+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
         panel.background = element_blank(), axis.line = element_line(colour = "black"),

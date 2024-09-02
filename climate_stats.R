@@ -37,7 +37,7 @@ tenn_clim <- mutate(tenn_clim, month=month(tenn_clim$DATE))
 tenn_clim$julian_date <- yday(tenn_clim$DATE)
 
 #omit NA in precipitation recordings 
-tenn_clim<-tenn_clim[complete.cases(tenn_clim[,4]),]
+#tenn_clim<-tenn_clim[complete.cases(tenn_clim[,4]),]
 #omit NA in TMAX recordings 
 #tenn_clim<-tenn_clim[complete.cases(tenn_clim[,5]),]
 #omit NA in TMIN recordings 
@@ -48,9 +48,9 @@ tenn1980 <- tenn_clim %>%
   filter(year>1979) %>%
   filter(year<2024)
 
-###########################
-### Climate data points ###
-###########################
+# # # # # # # # # # # # # #
+## Climate data points ----
+# # # # # # # # # # # # # #
 
 #determine annual precipitation values
 precip <- tenn1980 %>%
@@ -82,10 +82,10 @@ mean_TMIN <-   climate %>%
 mean_precip <-   climate %>%
   dplyr::summarise(mean_precip = mean(annual_precip))
 
-#filter for 1980-2022 (2023 has incomplete data)
+#filter for 1980-2023
 climate1980 <- climate %>%
   filter(year>1979) %>%
-  filter(year<2023)
+  filter(year<2024)
 
 #Plot for climate since 1980
 climate_plot <- ggplot() +
@@ -106,9 +106,9 @@ climate_plot <- ggplot() +
   
 climate_plot
 
-###########################
-### TMIN by Julian date ###
-###########################
+# # # # # # # # # # # # # #
+## TMIN by Julian date ----
+# # # # # # # # # # # # # #
 
 #model to evalutate changes in TMIN by Julian date every years since 1980
 TMIN_model <- glm(TMIN ~ julian_date * year , data=tenn1980)
@@ -116,13 +116,13 @@ TMIN_model <- glm(TMIN ~ julian_date * year , data=tenn1980)
 summary(TMIN_model)
 
 
-###################
-### Last freeze ###
-###################
+# # # # # # # # # #
+## Last freeze ----
+# # # # # # # # # #
 
-#calculate last day below -2 for each year since 1980
+#calculate last day below 0 for each year since 1980
 last_freeze <- tenn1980%>%
-  filter(TMIN< -2)%>%
+  filter(TMIN< 0)%>%
   filter(julian_date<180)%>%
   group_by(year)%>%
   filter(row_number()==n())
@@ -134,23 +134,21 @@ mean(as.numeric(last_freeze$julian_date))
 last_freeze_mod <- lm(julian_date~year, data=last_freeze)
 summary(last_freeze_mod)
 
-
-
 ##############################################
-### The number of days below -2 since 1980 ###
+### The number of days below 0 since 1980 ###
 ##############################################
 
-#determine number of spring days below -2
-neg_2_days <- tenn_clim %>%
+#determine number of spring days below 0
+freeze_days <- tenn_clim %>%
   group_by(year) %>%
-  filter(month <6) %>%
+  filter(month <5) %>%
   filter(year>1979) %>%
-  summarise(total_days=sum(TMIN < -2))
+  summarise(total_days=sum(TMIN < 0))
 
-mean(neg_2_days$total_days)
+mean(freeze_days$total_days)
 
-#plot Number of Days Below -2 since 1980
-TN_freeze_plot <- neg_2_days %>%
+#plot Number of Days Below 0 since 1980
+TN_freeze_plot <- freeze_days %>%
   ggplot(aes(x = year, y = total_days)) +
   geom_point(color="black") +
   geom_smooth(method="lm")+
@@ -166,7 +164,7 @@ TN_freeze_plot <- neg_2_days %>%
 
 TN_freeze_plot
 
-mod_neg2 <- lm(total_days~year, data=neg_2_days)
+mod_neg2 <- lm(total_days~year, data=freeze_days)
 summary(mod_neg2)
 
 #######################################

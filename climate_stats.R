@@ -130,13 +130,17 @@ last_freeze <- tenn1980%>%
 #calculate mean last freeze for TN since 1980
 mean(as.numeric(last_freeze$julian_date))
 
+#filter for julian date 94
+jd94 <- tenn1980%>%
+  filter(julian_date==94)
+
 #statistical model for changes in last freeze date
 last_freeze_mod <- lm(julian_date~year, data=last_freeze)
 summary(last_freeze_mod)
 
-##############################################
-### The number of days below 0 since 1980 ###
-##############################################
+# # # # # # # # # # # # # # # # # # # # # # #
+## The number of days below 0 since 1980 ----
+# # # # # # # # # # # # # # # # # # # # # # #
 
 #determine number of spring days below 0
 freeze_days <- tenn_clim %>%
@@ -167,9 +171,9 @@ TN_freeze_plot
 mod_neg2 <- lm(total_days~year, data=freeze_days)
 summary(mod_neg2)
 
-#######################################
-### Absolute Low by year since 1980 ###
-#######################################
+# # # # # # # # # # # # # # # # # # # # #
+## Absolute Low by year since 1980 ----
+# # # # # # # # # # # # # # # # # # # # #
 
 #Determine absolute coldest day by year
 tenn_clim$DATE <- as.Date(tenn_clim$DATE)
@@ -187,9 +191,9 @@ TMIN_1980
 absolute_TMIN <- lm(temp~year, data=yearly_TMIN)
 summary(absolute_TMIN)
 
-###########################################################
-### Mean low temperatures for February, March and April ###
-###########################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
+## Mean low temps for February, March and April ----
+# # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 February_mean_tmin <- tenn1980 %>%
   group_by(julian_date, year) %>%
@@ -251,13 +255,13 @@ april_TMIN_plot
 
 grid.arrange(february_TMIN_plot,march_TMIN_plot,april_TMIN_plot,ncol=2)
 
-###########################################################################################
-                                #Unused code
-###########################################################################################
+# # # # # # # # # #
+## Unused code ----
+# # # # # # # # # #
 
-#########################################
-### Four panel temperature comparison ###
-#########################################
+# # # # # # # # # # # # # # # # # # # # # #
+### Four panel temperature comparison ----
+# # # # # # # # # # # # # # # # # # # # # #
 
 # Plot mean low temp for March and April since 1980
 UL <- tenn_clim %>%
@@ -357,9 +361,9 @@ BR_plot <- ggplot(BR, aes(x=julian_date, y=tmean, color=year, group=year))+
 BR_plot
 
 
-###############################################
-### plot monthly mean low temps for Jan-May ###
-###############################################
+# # # # # # # # # # # # # # # # # # # # # # # #
+### plot monthly mean low temps for Jan-May ----
+# # # # # # # # # # # # # # # # # # # # # # # #
 
 as.Date(tenn_clim$DATE)
 

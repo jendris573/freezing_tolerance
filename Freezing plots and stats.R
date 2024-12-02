@@ -290,7 +290,7 @@ dredge(LT50_model)
 
 #final model for LT50 
 LT50_final_model <- glm(LT50 ~ Species + julian_date, data=outputs)
-summary(LT50_final_model)
+anova(LT50_final_model)
 
 summary(glht(LT50_final_model, mcp(Species= "Tukey")))
 

@@ -32,7 +32,7 @@ ggplot(outputs,aes(x=phen,y=LT50,fill=year))+
 #                      p.adjust.method = "BH")
 # #only 0 is different than stage 2 and 3
 
-#a better model that incorprates year, species and phenology stage
+#a better model that incorporates year, species and phenology stage
 mod<-glm(LT50~(phen+year+Species)^2,data=outputs,na.action="na.fail")
 summary(mod)
 dredge(mod)

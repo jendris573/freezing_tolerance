@@ -1,7 +1,8 @@
 #code specifically comparing LT50 differences among phenology stages
 #we have no LT50 for stage 4 phenology
 #potential focus on just stage 3 phenology since we have data for that for all species and years
-
+library(readxl)
+library(ggplot2)
 #read in raw data for LT50 values
 outputs<-read_excel("data/LT50 master.xlsx")
 
@@ -32,7 +33,7 @@ ggplot(outputs,aes(x=phen,y=LT50,fill=year))+
 #                      p.adjust.method = "BH")
 # #only 0 is different than stage 2 and 3
 
-#a better model that incorporates year, species and phenology stage
+#a better model that incorprates year, species and phenology stage
 mod<-glm(LT50~(phen+year+Species)^2,data=outputs,na.action="na.fail")
 summary(mod)
 dredge(mod)
